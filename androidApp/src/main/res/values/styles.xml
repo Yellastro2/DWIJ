@@ -1,0 +1,20 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary2</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark2</item>
+        <item name="colorAccent">@color/colorAccent2</item>
+        <item name="android:navigationBarColor">@color/colorPrimaryDark2</item>
+    </style>
+
+    <style name="ImgBtnNoBkg" parent="Widget.AppCompat.ImageButton">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+    <style name="BtnNoBkg" parent="Widget.AppCompat.Button">
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="SettingsItemStyle">
+        <item name="android:layout_margin">10dp</item>
+    </style>
+
+</resources>

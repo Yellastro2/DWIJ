@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/fr_tracklist_back"
+            style="@style/ImgBtnNoBkg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            app:srcCompat="@drawable/abc_vector_test" />
+
+        <TextView
+            android:id="@+id/fr_tracklist_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="TextView"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/fr_tracklist_titlebar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.3"
+            android:gravity="center">
+
+            <TextView
+                android:paddingHorizontal="20dp"
+                android:id="@+id/fr_tracklist_storage"
+                android:layout_width="wrap_content"
+
+                android:layout_height="match_parent"
+                android:text="Storage" />
+
+            <TextView
+                android:id="@+id/fr_tracklist_yam"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:paddingHorizontal="20dp"
+                android:text="Ya.Music"
+                app:layout_constraintStart_toEndOf="@+id/fr_tracklist_storage"
+                tools:layout_editor_absoluteY="0dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/fr_tracklist_recycl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

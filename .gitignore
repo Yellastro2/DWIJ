@@ -1,0 +1,12 @@
+*.iml
+.gradle
+.idea
+.DS_Store
+build
+!androidApp/build/intermediates/apk/debug/androidApp-debug.apk
+
+captures
+.externalNativeBuild
+.cxx
+local.properties
+xcuserdata

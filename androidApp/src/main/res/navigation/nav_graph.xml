@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph.xml"
+    app:startDestination="@id/homeFrag">
+    <fragment
+        android:id="@+id/homeFrag"
+        android:name="com.yelldev.dwij.android.fragments.HomeFrag"
+        android:label="HomeFrag"
+        tools:layout="@layout/fr_home">
+        <action
+            android:id="@+id/action_homeFrag_to_plListFrag"
+            app:destination="@id/plListFrag" />
+        <action
+            android:id="@+id/action_homeFrag_to_trackListFrag"
+            app:destination="@id/trackListFrag" />
+        <action
+            android:id="@+id/action_homeFrag_to_settingsAct"
+            app:destination="@id/settingsAct" />
+        <action
+            android:id="@+id/action_homeFrag_to_loginFrag"
+            app:destination="@id/loginFrag" />
+        <action
+            android:id="@+id/action_homeFrag_to_accountFrag"
+            app:destination="@id/accountFrag" />
+    </fragment>
+    <fragment
+        android:id="@+id/bigPlayerFrag"
+        android:name="com.yelldev.dwij.android.fragments.BigPlayerFrag"
+        android:label="BigPlayerFrag"
+        tools:layout="@layout/frag_player">
+        <action
+            android:id="@+id/action_bigPlayerFrag_to_trackListFrag"
+            app:destination="@id/trackListFrag"
+            app:enterAnim="@anim/slide_down"
+            app:popExitAnim="@anim/slide_up"
+            app:popUpTo="@id/plListFrag"
+            app:popUpToInclusive="false" />
+        <action
+            android:id="@+id/add_trackTo_plList"
+            app:destination="@id/plListFrag">
+            <argument
+                android:name="action_data"
+                app:argType="integer"
+                android:defaultValue="-1" />
+        </action>
+
+    </fragment>
+    <fragment
+        android:id="@+id/plListFrag"
+        android:name="com.yelldev.dwij.android.fragments.PlListFrag"
+        android:label="PlListFrag"
+        tools:layout="@layout/frag_list_pllist">
+        <action
+            android:id="@+id/action_plListFrag_to_bigPlayerFrag"
+            app:destination="@id/bigPlayerFrag"
+            app:popExitAnim="@anim/slide_down" />
+    </fragment>
+    <fragment
+        android:id="@+id/trackListFrag"
+        android:name="com.yelldev.dwij.android.fragments.TrackListFrag"
+        android:label="TrackListFrag"
+        tools:layout="@layout/frag_tracklist">
+        <action
+            android:id="@+id/action_trackListFrag_to_bigPlayerFrag"
+            app:destination="@id/bigPlayerFrag"
+            app:popExitAnim="@anim/slide_down" />
+        <action
+            android:id="@+id/action_trackListFrag_to_plListFrag"
+            app:destination="@id/plListFrag">
+
+        </action>
+    </fragment>
+    <activity
+        android:id="@+id/settingsAct"
+        android:name="com.yelldev.dwij.android.activities.SettingsAct"
+        android:label="SettingsAct"
+        tools:layout="@layout/lay_settings"/>
+    <fragment
+        android:id="@+id/loginFrag"
+        android:name="com.yelldev.dwij.android.fragments.LoginFrag"
+        android:label="fr_login"
+        tools:layout="@layout/fr_login" >
+        <action
+            android:id="@+id/action_loginFrag_to_accountFrag"
+            app:destination="@id/accountFrag" />
+    </fragment>
+    <fragment
+        android:id="@+id/accountFrag"
+        android:name="com.yelldev.dwij.android.fragments.AccountFrag"
+        android:label="fr_account"
+        tools:layout="@layout/fr_account" />
+</navigation>
