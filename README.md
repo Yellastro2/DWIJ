@@ -1,8 +1,8 @@
 # DWIJ 
 - Is android music player that allows you to play music from storage and Yandex Music
 
-<img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-28.jpg" width="300"/> <img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-31.jpg" width="300"/>
-<img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-34.jpg" width="300"/>
+<img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-28.jpg" width="200"/> <img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-31.jpg" width="200"/>
+<img src="https://github.com/Yellastro2/porfolio/blob/main/res/photo_2024-03-12_18-27-34.jpg" width="200"/>
 
 # BIG THANX [MarshalX](https://github.com/MarshalX) for [yandex-music-api](https://github.com/MarshalX/yandex-music-api) repo
 
