@@ -56,6 +56,9 @@
             android:id="@+id/action_plListFrag_to_bigPlayerFrag"
             app:destination="@id/bigPlayerFrag"
             app:popExitAnim="@anim/slide_down" />
+        <action
+            android:id="@+id/action_plListFrag_to_objectFrag"
+            app:destination="@id/objectFrag" />
     </fragment>
     <fragment
         android:id="@+id/trackListFrag"
@@ -91,4 +94,9 @@
         android:name="com.yelldev.dwij.android.fragments.AccountFrag"
         android:label="fr_account"
         tools:layout="@layout/fr_account" />
+    <fragment
+        android:id="@+id/objectFrag"
+        android:name="com.yelldev.dwij.android.fragments.ObjectFrag"
+        android:label="fragment_object"
+        tools:layout="@layout/fragment_object" />
 </navigation>

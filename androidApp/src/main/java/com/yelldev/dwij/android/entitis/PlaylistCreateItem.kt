@@ -17,7 +17,7 @@ class PlaylistCreateItem: iPlaylist {
 	override val mTitle: String = ""
 	override var mDuration: Int = 0
 	override var mCount: Int = 0
-	override suspend fun getCoverBtmAsync(fClient: yMediaStore): Bitmap? {
+	override suspend fun getImage(fClient: yMediaStore): Bitmap? {
 		val fRes = BitmapFactory.decodeResource(fClient.mCtx.resources, R.drawable.img_plus)
 		return fRes
 	}
@@ -27,6 +27,11 @@ class PlaylistCreateItem: iPlaylist {
 	}
 
 	override suspend fun getTracks(fStore: yMediaStore): ArrayList<iTrack> {
+		TODO("Not yet implemented")
+	}
+
+
+	override fun getInfo(): String {
 		TODO("Not yet implemented")
 	}
 

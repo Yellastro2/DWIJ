@@ -12,6 +12,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.yelldev.dwij.android.MainActivity
 import com.yelldev.dwij.android.player_engine.PlayerService
 import com.yelldev.dwij.android.R
@@ -125,7 +126,7 @@ open class PlayerAbs() : Fragment() {
 		mvArtist?.setText(fTrack.mArtist)
 		mvTitle?.setText(fTrack.mTitle)
 
-		GlobalScope.launch(Dispatchers.IO){
+		lifecycleScope.launch(Dispatchers.IO){
 			val fSingle = fTrack.set_Cover_toView(yMediaStore.store(requireContext()),400)
 			withContext(Dispatchers.Main){
 				if (fSingle!=null)

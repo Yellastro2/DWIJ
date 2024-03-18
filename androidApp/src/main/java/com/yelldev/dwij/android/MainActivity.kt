@@ -26,6 +26,7 @@ import com.yelldev.dwij.android.entitis.iTrackList
 import com.yelldev.dwij.android.fragments.BigPlayerFrag
 import com.yelldev.dwij.android.fragments.HomeFrag
 import com.yelldev.dwij.android.fragments.LilPlayerFrag
+import com.yelldev.dwij.android.fragments.ObjectFrag
 import com.yelldev.dwij.android.fragments.PlListFrag
 import com.yelldev.dwij.android.fragments.PlayerAbs
 import com.yelldev.dwij.android.fragments.TrackListFrag
@@ -226,7 +227,11 @@ class MainActivity : AppCompatActivity() {
         if(mPlayer == null){
             initPlayer()
         }
-        mNavController.navigate(R.id.action_plListFrag_to_bigPlayerFrag)
+        val fBndl = Bundle()
+        fBndl.putString(KeyStore.TYPE,ObjectFrag.PLAYLIST)
+        fBndl.putString(KeyStore.VALUE,fPlayList)
+        mNavController.navigate(R.id.action_plListFrag_to_objectFrag,fBndl)
+//        mNavController.navigate(R.id.action_plListFrag_to_bigPlayerFrag)
         mPlayer?.setList(fPlayList)
     }
 

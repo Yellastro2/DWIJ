@@ -307,6 +307,7 @@ class BigPlayerFrag() :
 
 
 
+
 		override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
 			super.onAttachedToRecyclerView(recyclerView)
 			mRecyclerView = recyclerView

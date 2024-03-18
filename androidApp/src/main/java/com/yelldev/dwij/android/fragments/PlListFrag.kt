@@ -23,6 +23,7 @@ import com.yelldev.dwij.android.utils.yLog
 import com.yelldev.dwij.android.utils.yTimer
 import com.yelldev.dwij.android.yMediaStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -88,10 +89,10 @@ class PlListFrag() : Fragment(R.layout.frag_list_pllist) {
 					mPickedTrack = fTrackId
 					mOnIteClick = {
 							fPl: iPlaylist ->
-						Thread(){
-
+						GlobalScope.launch(Dispatchers.Default){
 							(fPl as YaPlaylist).addTrack(fStore,mTrackObj!!)
-							view.post { val snack = Snackbar.make(view.rootView.findViewById(android.R.id.content),
+							withContext(Dispatchers.Main) {
+								val snack = Snackbar.make(view.rootView.findViewById(android.R.id.content),
 								"${mTrackObj!!.mTitle} added to ${fPl.mTitle}",Snackbar.LENGTH_LONG)
 								(activity as MainActivity).mNavController.popBackStack()
 								snack.show()

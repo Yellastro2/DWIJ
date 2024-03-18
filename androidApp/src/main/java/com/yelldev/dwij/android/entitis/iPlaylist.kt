@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import com.yelldev.dwij.android.yMediaStore
 import io.reactivex.rxjava3.core.Single
 
-interface iPlaylist: iTrackList {
+interface iPlaylist: iTrackList, yEntity {
 	var mTrackList: ArrayList<String>
 
 	val mId: String
@@ -13,5 +13,5 @@ interface iPlaylist: iTrackList {
 	var mDuration: Int
 	var mCount: Int
 //	fun getCoverBtm(fSome: yMediaStore): Single<Bitmap>
-	suspend fun getCoverBtmAsync(fClient: yMediaStore): Bitmap?
+//	suspend fun getCoverBtmAsync(fClient: yMediaStore): Bitmap?
 }

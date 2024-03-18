@@ -87,7 +87,7 @@ RecyclerView.Adapter<ListPlLsAdapter.ViewHolder>() {
 		mScope?.launch(Dispatchers.IO) {
 			try{
 				val fRes = mList[position]
-					.getCoverBtmAsync(yMediaStore.store(viewHolder.vAutor.context))
+					.getImage(yMediaStore.store(viewHolder.vAutor.context))
 				withContext(Dispatchers.Main){
 					viewHolder.vImg.setImageBitmap(fRes)
 				}

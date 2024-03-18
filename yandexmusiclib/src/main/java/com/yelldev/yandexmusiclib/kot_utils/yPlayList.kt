@@ -27,17 +27,18 @@ abstract class yPlayList(
 	abstract var mCount: Int
 	abstract var mDuration: Int
 	abstract val mCover: JSONObject
-	abstract var mTrackList: ArrayList<String>?
+	abstract var mTrackList: ArrayList<String>
 	abstract var mRevision: Int
 	abstract val mKindId: String
 	fun getCoverBtm(fClient: yClient): Bitmap? {
 		return fClient.getCover(mCover,200)
 	}
 
+
 	open var mIsnodata = true
 
 
-	fun update(fJson: JSONObject){
+	open fun update(fJson: JSONObject){
 //		mTitle = fJson.getString("title")
 		mCount = fJson.getInt("trackCount")
 		mDuration = fJson.getInt("durationMs")
@@ -63,20 +64,21 @@ abstract class yPlayList(
 
 	fun addTrack(fClient: yClient,fTrack: yTrack){
 //		TODO
-		val fDif = Differenc().addInsert(0, fTrack)
-		val fRes = fClient.changePlaylist(mId, fDif.toJSON(), mRevision)
+		val fDif = Differenc().addInsert(0, fTrack.mId,fTrack.mAlbums[0])
+		val fRes = fClient.changePlaylist(mKindId, fDif.toJSON(), mRevision)
 		update(fRes.getJSONObject("result"))
+		mTrackList.add(0,fTrack.mId)
 	}
 
 	fun removeTrack(fClient: yClient,fTrack: yTrack): Boolean {
-		val fNum = mTrackList!!.indexOf(fTrack.mId)
+		val fNum = mTrackList.indexOf(fTrack.mId)
 		val fDif = Differenc().addDelete(fNum, fNum+1)
 		try {
-			fClient?.let {
+			fClient.let {
 
 				val fRes = it.changePlaylist(mKindId, fDif.toJSON(), mRevision)
 				update(fRes.getJSONObject("result"))
-				mTrackList!!.remove(fTrack.mId)
+				mTrackList.remove(fTrack.mId)
 
 				return true
 			}

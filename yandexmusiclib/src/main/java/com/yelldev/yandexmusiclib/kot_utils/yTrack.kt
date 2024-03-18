@@ -25,40 +25,20 @@ import java.util.concurrent.ExecutionException
 
 
 
-open class yTrack(val client: yClient, val m_Data : JSONObject) {
-	open var LOG = yLog.log(yTrack::class.java.name)
+abstract class yTrack() {
 
-	val mId: String
-	var title: String
-	var m_Artist_Data: JSONArray
-	lateinit var artists: ArrayList<Unit>
-	val mAlbums = ArrayList<yAlbum>()
-	var m_Cover_Url: String
 
-	//	val ogImage: OgImage? = null
-	val durationMs: Int? = null
-
-	//	val cover: TrackCover? = null
-	val backgroundVideoUri: String? = null
-	val trackSource: String? = null
-	val availableForPremiumUsers: Boolean? = null
-	val availableFullWithoutPermission: Boolean? = null
-	val available: Boolean? = null
-	val lyricsAvailable: Boolean? = null
-	val type: String? = null
-	val hasAvailableSyncLyrics: Boolean? = null
-	val hasAvailableTextLyrics: Boolean? = null
-	val previewDurationMs: Int? = null
-	val majorName: String? = null
-	val majorId: Int? = null
-	val fileSize: Int? = null
-	val storageDir: String? = null
-	var trackSharingFlag: String? = null
-	val realId: Int? = null
+	abstract open val mId: String
+	abstract val mTitle: String
+//	abstract var m_Artist_Data: JSONArray
+//	lateinit var artists: ArrayList<Unit>
+	open val mAlbums = ArrayList<String>()
+	abstract var mCover: String?
 
 //
 
 	companion object {
+		open var LOG = yLog.log(yTrack::class.java.name)
 		fun getMd5(input: String): String {
 			return try {
 				val md = MessageDigest.getInstance("MD5")
@@ -120,34 +100,34 @@ open class yTrack(val client: yClient, val m_Data : JSONObject) {
 		}
 	}
 
-	init {
-		mId = m_Data.getString("id")
-		title = m_Data.getString("title")
-		val k_cover = "coverUri"
-		if (m_Data.has(k_cover)) {
-			m_Cover_Url = m_Data.getString("coverUri")
-		} else m_Cover_Url = ""
-		m_Artist_Data = m_Data.getJSONArray("artists")
-		val fJsAlbums = m_Data.getJSONArray("albums")
-		for (i in 0 until fJsAlbums.length()) {
-			mAlbums.add(yAlbum(fJsAlbums.getJSONObject(i)))
-		}
+//	init {
+//		mId = m_Data.getString("id")
+//		title = m_Data.getString("title")
+//		val k_cover = "coverUri"
+//		if (m_Data.has(k_cover)) {
+//			m_Cover_Url = m_Data.getString("coverUri")
+//		} else m_Cover_Url = ""
+//		m_Artist_Data = m_Data.getJSONArray("artists")
+//		val fJsAlbums = m_Data.getJSONArray("albums")
+//		for (i in 0 until fJsAlbums.length()) {
+//			mAlbums.add(yAlbum(fJsAlbums.getJSONObject(i)))
+//		}
+//
+//	}
 
-	}
 
-
-	@WorkerThread
-	fun get_Cover_Bitmap(f_size: Int): Bitmap? {
-		try {
-			if (m_Cover_Url == "") return null
-			val f_url = m_Cover_Url.replace("%%", "$f_size" + "x$f_size")
-			val url = URL("https://$f_url");
-			val image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
-			return image
-		} catch (e: IOException) {
-			LOG.warning(e.stackTraceToString());
-			return null
-		}
-
-	}
+//	@WorkerThread
+//	fun get_Cover_Bitmap(f_size: Int): Bitmap? {
+//		try {
+//			if (m_Cover_Url == "") return null
+//			val f_url = m_Cover_Url.replace("%%", "$f_size" + "x$f_size")
+//			val url = URL("https://$f_url");
+//			val image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+//			return image
+//		} catch (e: IOException) {
+//			LOG.warning(e.stackTraceToString());
+//			return null
+//		}
+//
+//	}
 }

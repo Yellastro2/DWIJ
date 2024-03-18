@@ -49,7 +49,7 @@ dependencies {
 	implementation("com.google.android.gms:play-services-base:18.2.0")
 	implementation("com.google.android.gms:play-services-auth:20.7.0")
 
-	// Navigation Components
+    // Navigation Components
     val navVersion = "2.6.0"
     implementation ("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation ("androidx.navigation:navigation-ui-ktx:$navVersion")

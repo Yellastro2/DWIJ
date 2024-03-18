@@ -355,7 +355,7 @@ class yMediaStore(val mCtx: Context) {
 					val qRamPlList = mPlListMap[qpl.mId]
 					if (qRamPlList == null ||
 						qpl.mRevision != qRamPlList.mRevision ||
-						qpl.mIsnodata)
+						qRamPlList.mIsnodata)
 						updatePlayList(plDao,qpl.mKindId)
 				}
 			}

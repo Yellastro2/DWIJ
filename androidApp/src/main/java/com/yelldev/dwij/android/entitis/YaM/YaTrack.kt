@@ -16,6 +16,7 @@ import androidx.room.Update
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.yMediaStore
+import com.yelldev.yandexmusiclib.kot_utils.yTrack
 
 @Entity(tableName = "tracks")
 class YaTrack(
@@ -25,12 +26,12 @@ class YaTrack(
 	@JsonProperty("title")
 	override val mTitle: String,
 	@JsonProperty("coverUri")
-	override val mCover: String?,
+	override var mCover: String?,
 	@JsonProperty("available")
 	val isAvaibale: Boolean,
 	@JsonProperty("durationMs")
 	val mDuration: Int
-) : iTrack {
+) : iTrack, yTrack() {
 
 	companion object {
 		val TAG = "YaTrack"
@@ -150,7 +151,7 @@ class YaTrack(
 	override suspend fun set_Cover_toView(fStore: yMediaStore, f_size:Int): Bitmap? {
 		if(mCover == null)
 			return null
-		return fStore.getCoverAsync(mCover,f_size)
+		return fStore.getCoverAsync(mCover!!,f_size)
 	}
 
 	override fun addPlaylist(fStore: yMediaStore, fPlId: String) {

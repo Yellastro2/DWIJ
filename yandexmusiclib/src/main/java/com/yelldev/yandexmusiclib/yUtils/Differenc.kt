@@ -91,37 +91,37 @@ class Differenc {
 
 	}
 
-	fun addInsert(fAt: Int,vararg fTracks: yTrack): Differenc {
-//		Добавление операции вставки.
+//	fun addInsert(fAt: Int,vararg fTracks: yTrack): Differenc {
+////		Добавление операции вставки.
+////
+////        Note:
+////            В `tracks` передаётся словарь с двумя ключами: `id`, `album_id`. Это нужно для формирования операции.
+////
+////        Args:
+////            at (:obj:`int`): Индекс для вставки.
+////            tracks (:obj:`dict` | :obj:`list: из :obj:`dict`): Словарь уникальными идентификаторами треков.
+////
+////        Returns:
+////            :obj:`yandex_music.utils.difference.Difference`: Набор операций над плейлистом.
+////	# TODO (MarshalX) принимать TrackId, а так же строку и сплитить её по ":".
+////	#  При отсутствии album_id кидать исключение.
+////	#  https://github.com/MarshalX/yandex-music-api/issues/558
+//		val fJsonTracks = JSONArray()
+//		for(qTrack in fTracks){
+//			fJsonTracks.put(
+//				JSONObject("{ 'id': '${qTrack.mId}'," +
+//					" 'albumId': ${qTrack.mAlbums.get(0).mId} }")
+//			)
+//		}
 //
-//        Note:
-//            В `tracks` передаётся словарь с двумя ключами: `id`, `album_id`. Это нужно для формирования операции.
+//		val fOperation = JSONObject("{" +
+//				"'op': ${Operation.INSERT}," +
+//				"'at': $fAt," +
+//				"'tracks': $fJsonTracks}")
+//		mOperations.add(fOperation)
+//		return this@Differenc
 //
-//        Args:
-//            at (:obj:`int`): Индекс для вставки.
-//            tracks (:obj:`dict` | :obj:`list: из :obj:`dict`): Словарь уникальными идентификаторами треков.
-//
-//        Returns:
-//            :obj:`yandex_music.utils.difference.Difference`: Набор операций над плейлистом.
-//	# TODO (MarshalX) принимать TrackId, а так же строку и сплитить её по ":".
-//	#  При отсутствии album_id кидать исключение.
-//	#  https://github.com/MarshalX/yandex-music-api/issues/558
-		val fJsonTracks = JSONArray()
-		for(qTrack in fTracks){
-			fJsonTracks.put(
-				JSONObject("{ 'id': '${qTrack.mId}'," +
-					" 'albumId': ${qTrack.mAlbums.get(0).mId} }")
-			)
-		}
-
-		val fOperation = JSONObject("{" +
-				"'op': ${Operation.INSERT}," +
-				"'at': $fAt," +
-				"'tracks': $fJsonTracks}")
-		mOperations.add(fOperation)
-		return this@Differenc
-
-	}
+//	}
 
 
 

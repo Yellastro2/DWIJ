@@ -23,5 +23,7 @@ class KeyStore {
 
 		val STORAGE_TRACKLIST = "storage"
 		val YANDEX_TRACKLIST = "Yam tracks"
+		val TYPE = "type"
+		val VALUE = "value"
 	}
 }

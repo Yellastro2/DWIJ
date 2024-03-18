@@ -12,7 +12,9 @@ import androidx.room.Update
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.yelldev.dwij.android.entitis.iPlaylist
 import com.yelldev.dwij.android.entitis.iTrack
+import com.yelldev.dwij.android.entitis.yEntity
 import com.yelldev.dwij.android.yMediaStore
+import com.yelldev.yandexmusiclib.kot_utils.yPlayList
 import com.yelldev.yandexmusiclib.yUtils.Differenc
 import org.json.JSONObject
 
@@ -35,7 +37,7 @@ import org.json.JSONObject
 open//@JsonIgnoreProperties(ignoreUnknown=true)
 class YaPlaylist(
 	@JsonProperty("kind")
-	val mKindId: String,
+	override val mKindId: String,
 	@JsonProperty("playlistUuid")
 	@PrimaryKey
 	override val mId: String,
@@ -46,10 +48,11 @@ class YaPlaylist(
 	//				 @Ignore
 	//				 @JsonProperty("cover")  val mCover: yCover,
 	@JsonProperty("ogImage")  val mImage: String,
-	@JsonProperty("revision") open var mRevision: Int
+	@JsonProperty("revision") override var mRevision: Int
 
-)	: iPlaylist
-{
+)	: iPlaylist, yPlayList() {
+	@Ignore
+	override lateinit var mCover: JSONObject
 
 	@Entity(tableName = "covers")
 	class yCover(@JsonProperty("type")val mType: String,
@@ -112,8 +115,12 @@ class YaPlaylist(
 //		return fClient.getCover(mImage,150)
 //	}
 
-	override suspend fun getCoverBtmAsync(fClient: yMediaStore): Bitmap? {
+	override suspend fun getImage(fClient: yMediaStore): Bitmap? {
 		return fClient.getCoverAsync(mImage,200)
+	}
+
+	override fun getInfo(): String {
+		return "$mCount tracks"
 	}
 
 	@Ignore
@@ -147,83 +154,76 @@ class YaPlaylist(
 	}
 
 
-	fun update(fJson: JSONObject){
-//		mTitle = fJson.getString("title")
+	override fun update(fJson: JSONObject){
 		mCount = fJson.getInt("trackCount")
 		mDuration = fJson.getInt("durationMs")
-//		mId = fJson.getString("kind")
-//		mCover = fJson.getJSONObject("cover")
 		mRevision = fJson.getInt("revision")
-
-//		if(fJson.has("tracks")){
-//			mIsnodata = false
-//			if (mTracklist == null) mTracklist = ArrayList<String>()
-//			var m_trackList_json = fJson.getJSONArray("tracks")
-//			for ( q_json in Utils.getArray(m_trackList_json))
-//				mTracklist!!.add((q_json  as JSONObject).getString("id"))
-//		} else{
-//			mIsnodata = true
-//		}
 	}
 
 
-//	fun getTrackList(): List<yTrack>{
-//		return ArrayList()
-//	}
-
-	fun removeTrack(fStore: yMediaStore,fTrack: YaTrack): Boolean {
-		val fNum = mTrackList.indexOf(fTrack.mId)
-		val fDif = Differenc().addDelete(fNum, fNum+1)
+	suspend fun removeTrack(fStore: yMediaStore, fTrack: YaTrack): Boolean {
 		try {
-			fStore.mYamClient?.let {
-
-				val fRes = it.changePlaylist(mKindId, fDif.toJSON(), mRevision)
-				update(fRes.getJSONObject("result"))
-				mTrackList.remove(fTrack.mId)
-				fTrack.removeFromPlList(fStore.db.tracksDao(),this)
-//				fTrack.mPlaylists.remove(mId)
-				updListString(fStore.plDao,fTrack.mId,false)
-
-//				fTrack.addPlaylist(fStore,mId)
-				return true
+			fStore.getYamClient()?.let {
+				if (super.removeTrack(it,fTrack)){
+					fTrack.removeFromPlList(fStore.db.tracksDao(),this)
+					updListString(fStore.plDao,fTrack.mId,false)
+					return true
+				}
 			}
 		}catch (e: Exception){
 			e.printStackTrace()
 		}
 
+
+//		val fNum = mTrackList.indexOf(fTrack.mId)
+//		val fDif = Differenc().addDelete(fNum, fNum+1)
+//		try {
+//			fStore.mYamClient?.let {
+//
+//				val fRes = it.changePlaylist(mKindId, fDif.toJSON(), mRevision)
+//				update(fRes.getJSONObject("result"))
+//				mTrackList.remove(fTrack.mId)
+//				fTrack.removeFromPlList(fStore.db.tracksDao(),this)
+////				fTrack.mPlaylists.remove(mId)
+//				updListString(fStore.plDao,fTrack.mId,false)
+//
+////				fTrack.addPlaylist(fStore,mId)
+//				return true
+//			}
+//		}catch (e: Exception){
+//			e.printStackTrace()
+//		}
+
 		return false
 	}
 
-	fun addTrack(fStore: yMediaStore,fTrack: YaTrack): Boolean {
+	suspend fun addTrack(fStore: yMediaStore, fTrack: YaTrack): Boolean {
 //		TODO
-		val fDif = Differenc().addInsert(0, fTrack.mId,fTrack.mAlbums[0])
 		try {
-			fStore.mYamClient?.let {
-
-				val fRes = it.changePlaylist(mKindId, fDif.toJSON(), mRevision)
-				update(fRes.getJSONObject("result"))
-				mTrackList.add(0,fTrack.mId)
+			fStore.getYamClient()?.let {
+				super.addTrack(it,fTrack)
 				updListString(fStore.plDao,fTrack.mId,false)
 				fTrack.addPlaylist(fStore,mId)
 				return true
 			}
+
+//		val fDif = Differenc().addInsert(0, fTrack.mId,fTrack.mAlbums[0])
+//
+//			fStore.mYamClient?.let {
+//
+//				val fRes = it.changePlaylist(mKindId, fDif.toJSON(), mRevision)
+//				update(fRes.getJSONObject("result"))
+//				mTrackList.add(0,fTrack.mId)
+//				updListString(fStore.plDao,fTrack.mId,false)
+//				fTrack.addPlaylist(fStore,mId)
+//				return true
+//			}
 		}catch (e: Exception){
 			e.printStackTrace()
 		}
 
 		return false
 	}
-
-
-//	override val m_yTrackList: ArrayList<iTrack>
-//		get() = adaptTrackstoDwij(mTracklist)
-
-//	fun adaptTrackstoDwij(f_first_list: List<yTrack>): ArrayList<iTrack> {
-//		val f_result_list = ArrayList<iTrack>()
-//		for (q_track in f_first_list) f_result_list.add(YaTrack(q_track))
-//
-//		return f_result_list
-//	}
 
 	override fun toString(): String {
 		return "${this.javaClass.name}: $mTitle; $mKindId; $mId; $mDuration"

@@ -43,7 +43,7 @@ class YaLikedTracks(
 		mCount = mTrackList.size
 	}
 
-	override suspend fun getCoverBtmAsync(fClient: yMediaStore): Bitmap? {
+	override suspend fun getImage(fClient: yMediaStore): Bitmap? {
 
 		val fRes = BitmapFactory.decodeResource(fClient.mCtx.resources,R.drawable.img_like)
 		return fRes
@@ -52,6 +52,10 @@ class YaLikedTracks(
 
 	override fun getType(): String {
 		return LIKED_ID
+	}
+
+	override fun getInfo(): String {
+		return "Like info"
 	}
 
 	override suspend fun getTracks(fStore: yMediaStore): ArrayList<iTrack> {
