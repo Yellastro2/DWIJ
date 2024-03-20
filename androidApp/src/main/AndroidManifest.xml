@@ -37,6 +37,18 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter android:autoVerify="true"
+                android:label="yPlayer">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.example.com/gizmos” -->
+<!--                https://music.yandex.ru/album/19297693/track/90842069-->
+                <data android:scheme="https"
+                    android:host="music.yandex.ru"
+                    android:pathPrefix="/album" />
+                <!-- note that the leading "/" is required for pathPrefix-->
+            </intent-filter>
         </activity>
 
         <receiver android:name="androidx.media.session.MediaButtonReceiver"

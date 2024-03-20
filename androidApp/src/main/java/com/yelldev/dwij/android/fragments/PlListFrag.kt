@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.View
-import android.widget.Button
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -22,8 +21,11 @@ import com.yelldev.dwij.android.models.ListPlListModel
 import com.yelldev.dwij.android.utils.yLog
 import com.yelldev.dwij.android.utils.yTimer
 import com.yelldev.dwij.android.yMediaStore
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -46,11 +48,11 @@ class PlListFrag() : Fragment(R.layout.frag_list_pllist) {
 
 	var mOnIteClick: (iPlaylist) -> Unit = {
 			fPl: iPlaylist ->
-		val snack = Snackbar.make(requireActivity().findViewById(android.R.id.content),
-			"Start playlist ${fPl.mTitle}", Snackbar.LENGTH_LONG)
-
-		snack.show()
-		(requireActivity() as MainActivity).playThisList(fPl.mId) }
+//		val snack = Snackbar.make(requireActivity().findViewById(android.R.id.content),
+//			"Start playlist ${fPl.mTitle}", Snackbar.LENGTH_LONG)
+//
+//		snack.show()
+		(requireActivity() as MainActivity).showPlaylist(fPl.mId) }
 
 	var mPickedTrack: String = "-1"
 	var mTrackObj: YaTrack? = null
@@ -73,6 +75,8 @@ class PlListFrag() : Fragment(R.layout.frag_list_pllist) {
 //		var height = displayMetrics.heightPixels
 		mGridSize = width /3
 
+		var fTrackLoadJob: Deferred<Unit>? = null
+
 		if(arguments != null){
 			val fAction = requireArguments().getString(PLAYLIST_ACTION)
 			val fTrackId = requireArguments().getString(ACTION_DATA)
@@ -80,7 +84,7 @@ class PlListFrag() : Fragment(R.layout.frag_list_pllist) {
 			if(fAction == ACTION_ADDTRACK && fTrackId != null){
 //				model.viewModelScope.launch {
 				val fStore = yMediaStore.store(mMainActivity)
-				model.viewModelScope.launch(Dispatchers.IO) {
+				fTrackLoadJob = model.viewModelScope.async(Dispatchers.IO) {
 					mTrackObj = fStore.getTrack(fTrackId)
 					withContext(Dispatchers.Main) {
 						model.getAdapter().setTrack(mTrackObj!!)
@@ -142,6 +146,7 @@ class PlListFrag() : Fragment(R.layout.frag_list_pllist) {
 		v_Recycl.adapter = model.getAdapter()
 		v_Recycl.layoutManager = GridLayoutManager(context,3)
 		model.viewModelScope.launch(Dispatchers.IO) {
+			fTrackLoadJob?.await()
 			val fStore = yMediaStore.store(requireContext())
 			fStore.getYaMPlaylistsList() {
 				yTimer.timing(TAG,"notify adapter, size = ${it.size}")

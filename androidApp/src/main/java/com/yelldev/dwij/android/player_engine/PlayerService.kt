@@ -26,6 +26,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.yelldev.dwij.android.KeyStore
 import com.yelldev.dwij.android.MainActivity
 import com.yelldev.dwij.android.entitis.YaM.YaPlaylist
+import com.yelldev.dwij.android.entitis.YaM.YaSingleTrackList
 import com.yelldev.dwij.android.entitis.YaM.YaTrack
 import com.yelldev.dwij.android.entitis.YaM.yWave
 import com.yelldev.dwij.android.entitis.iTrack
@@ -439,19 +440,18 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         if(mTrackList?.getType()==YaPlaylist.TYPE) {
             mPlayerFrag?.setProgress()
             GlobalScope.launch(Dispatchers.IO){
-                withContext(Dispatchers.Main){
-
-                }
                 val fStore = yMediaStore.store(applicationContext)
 
                 setWaveList(fStore.getWave(mTrackList as YaPlaylist) as yWave)
             }
-//            Thread {
-//
-//                val fStore = yMediaStore.store(applicationContext)
-//
-//                setWaveList(fStore.getWave(mTrackList as YaPlaylist) as yWave)
-//            }.start()
+        }else if (mTrackList is YaSingleTrackList){
+            mPlayerFrag?.setProgress()
+            GlobalScope.launch(Dispatchers.IO){
+                val fStore = yMediaStore.store(applicationContext)
+                val fTrack = (mTrackList as YaSingleTrackList).mTrack
+                setWaveList(fStore
+                    .getWave((fTrack as YaTrack) ) as yWave)
+            }
         }
     }
 

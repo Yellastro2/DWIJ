@@ -18,9 +18,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.RecyclerView
+import com.yelldev.dwij.android.KeyStore
 import com.yelldev.dwij.android.KeyStore.Companion.COLOR_PINK
 import com.yelldev.dwij.android.MainActivity
 import com.yelldev.dwij.android.R
+import com.yelldev.dwij.android.entitis.YaM.YaLikedTracks
+import com.yelldev.dwij.android.entitis.YaM.YaPlaylist
+import com.yelldev.dwij.android.entitis.YaM.YaTrack
 import com.yelldev.dwij.android.entitis.iPlaylist
 import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.entitis.iTrackList
@@ -68,6 +72,7 @@ class BigPlayerFrag() :
 		mvAlbum = view.findViewById<TextView>(R.id.fr_player_album_name)
 		mvLike = view.findViewById<ImageView>(R.id.fr_player_like)
 
+		mvTitle.setOnClickListener { openTrackInfo() }
 
 
 		var doubleClick = false
@@ -173,6 +178,10 @@ class BigPlayerFrag() :
 		return view
 	}
 
+	private fun openTrackInfo() {
+		(activity as MainActivity).openTrackInfo(mTrackId)
+	}
+
 
 	override fun onResume() {
 		super.onResume()
@@ -215,16 +224,17 @@ class BigPlayerFrag() :
 		super.setTrack(fTrack, fTrackList)
 		mTrack = fTrack
 		val fStore = yMediaStore.store(requireContext())
-		lifecycleScope.launch(Dispatchers.Default){
-			val fCashed = fStore.getTrack(fTrack.mId)
-			if (fCashed != fTrack) {
-				withContext(Dispatchers.Main){
-					fTrack.mPlaylists = fCashed.mPlaylists
-					setPlaylists(fTrack,fStore)
-				}
+		if (fTrack is YaTrack)
+			lifecycleScope.launch(Dispatchers.Default){
+				val fCashed = fStore.getTrack(fTrack.mId)
+				if (fCashed != fTrack) {
+					withContext(Dispatchers.Main){
+						fTrack.mPlaylists = fCashed.mPlaylists
+						setPlaylists(fTrack,fStore)
+					}
 
+				}
 			}
-		}
 
 
 
@@ -261,8 +271,10 @@ class BigPlayerFrag() :
 				val fRes = fStore.getYamPlaylist(qPl)
 				withContext(Dispatchers.Main){
 					if (fRes != null) {
-						fPlLists.add(fRes)
-						updPlList(fPlLists)
+//						fPlLists.filter { (it as YaPlaylist).mKindId != YaLikedTracks.LIKED_ID }
+						if(fRes.mKindId != YaLikedTracks.LIKED_ID)
+							fPlLists.add(fRes)
+							updPlList(fPlLists)
 					}
 				}
 			}

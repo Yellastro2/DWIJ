@@ -45,6 +45,9 @@
                 app:argType="integer"
                 android:defaultValue="-1" />
         </action>
+        <action
+            android:id="@+id/action_bigPlayerFrag_to_objectFrag"
+            app:destination="@id/objectFrag" />
 
     </fragment>
     <fragment

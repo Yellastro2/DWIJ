@@ -6,11 +6,13 @@ import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.database.Cursor
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.RelativeLayout
 import androidx.appcompat.app.AppCompatActivity
@@ -53,15 +55,10 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    val sdfds = READ_EXTERNAL_STORAGE
-
-
-    //TODO init after login
-//    var m_Ya_Cli: com.yelldev.yandexmusiclib.yClient? = null
+//    https://music.yandex.ru/album/19297693/track/90842069
 
     var mList: iTrackList? = null
     var mSDList = ArrayList<iTrack>()
-    var mTrack = 0
 
     var mPlayer: PlayerService? = null
     var serviceBound = false
@@ -90,13 +87,66 @@ class MainActivity : AppCompatActivity() {
             KeyStore.TAG)
 
         mPermsManager.setupPermissions(Manifest.permission.READ_EXTERNAL_STORAGE){scanMedia()}
-
+//        getPlaylists()
         initPlayer()
+        intent?.let {
+            print(it)
+            if (it.action == Intent.ACTION_VIEW){
+                val fUrl = it.data
+                val fPaths = fUrl!!.pathSegments
+                val sdf = fPaths
+                if (fPaths[0] == "album"){
+                    val fAlbum = fPaths[1]
+                    if (fPaths[2] == "track"){
+                        val fTrack = fPaths[3]
+                        openTrackInfo(fTrack)
+                        return
+                    }
+                }
+            }
+        }
         openTopAct()
+    }
+
+    @SuppressLint("Range")
+    private fun getPlaylists() {
+        var cursor: Cursor? = null
+        val projection1 = arrayOf(
+            MediaStore.Audio.Playlists._ID,
+            MediaStore.Audio.Playlists.NAME
+        )
+        cursor = managedQuery(
+            MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI,
+            projection1,
+            null,
+            null,
+            null
+        )
+        startManagingCursor(cursor)
+        val fResult = ArrayList<String>()
+        if (cursor!=null)
+        while(cursor!!.moveToNext()){
+            val id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Playlists._ID))
+            val name = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Playlists.NAME))
+            val fl = "${name}_$id"
+            fResult.add(fl)
+            // Теперь у вас есть ID и имя плейлиста, вы можете использовать их в соответствии с вашими потребностями
+            // Например, вы можете получить список треков, принадлежащих каждому плейлисту
+        }
+
+//        cManager(cursor, 2, 1)
+        cursor.close();
     }
 
 //*********************************************
 //    FRAG NAVIGATIONS
+
+    fun openTrackInfo(fTrackId: String) {
+        val fBndl = Bundle()
+        fBndl.putString(KeyStore.TYPE,ObjectFrag.TRACK)
+        fBndl.putString(KeyStore.VALUE,fTrackId)
+        mNavController.navigate(R.id.objectFrag,fBndl)
+    }
 
     fun openFrame(fFrag: Fragment,isBackstack: Boolean = true){
         val fTrans = supportFragmentManager.beginTransaction()
@@ -223,7 +273,7 @@ class MainActivity : AppCompatActivity() {
         mNavController.navigate(R.id.bigPlayerFrag)
         mPlayer?.setWaveList(fWave as yWave)
     }
-    fun playThisList(fPlayList: String,f_track: Int = 0) {
+    fun showPlaylist(fPlayList: String, f_track: Int = 0) {
         if(mPlayer == null){
             initPlayer()
         }
@@ -232,7 +282,7 @@ class MainActivity : AppCompatActivity() {
         fBndl.putString(KeyStore.VALUE,fPlayList)
         mNavController.navigate(R.id.action_plListFrag_to_objectFrag,fBndl)
 //        mNavController.navigate(R.id.action_plListFrag_to_bigPlayerFrag)
-        mPlayer?.setList(fPlayList)
+//        mPlayer?.setList(fPlayList)
     }
 
     fun openTrackList(){

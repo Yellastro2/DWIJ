@@ -16,5 +16,14 @@
     <style name="SettingsItemStyle">
         <item name="android:layout_margin">10dp</item>
     </style>
+    
+    <style name="elipsizeTextVIew">
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:marqueeRepeatLimit">marquee_forever</item>
+        <item name="android:focusable">true</item>
+        <item name="android:focusableInTouchMode">true</item>
+        <item name="android:scrollHorizontally">true</item>
+    </style>
 
 </resources>

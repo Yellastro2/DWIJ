@@ -15,6 +15,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.yelldev.dwij.android.entitis.iTrack
+import com.yelldev.dwij.android.entitis.yEntity
 import com.yelldev.dwij.android.yMediaStore
 import com.yelldev.yandexmusiclib.kot_utils.yTrack
 
@@ -31,7 +32,7 @@ class YaTrack(
 	val isAvaibale: Boolean,
 	@JsonProperty("durationMs")
 	val mDuration: Int
-) : iTrack, yTrack() {
+) : iTrack, yEntity, yTrack() {
 
 	companion object {
 		val TAG = "YaTrack"
@@ -154,6 +155,22 @@ class YaTrack(
 		return fStore.getCoverAsync(mCover!!,f_size)
 	}
 
+
+	override suspend fun getImage(fClient: yMediaStore): Bitmap? {
+		if(mCover == null)
+			return null
+		return fClient.getCoverAsync(mCover!!,200)
+	}
+
+	@Ignore
+	override fun getTitle(): String {
+		return mTitle
+	}
+
+	override fun getInfo(): String {
+		return mArtist
+	}
+
 	override fun addPlaylist(fStore: yMediaStore, fPlId: String) {
 		mPlaylists.add(fPlId)
 		mPlaylistString += ";${fPlId}"
@@ -184,5 +201,7 @@ class YaTrack(
 		@Delete
 		fun delete(user: YaTrack)
 	}
+
+
 
 }

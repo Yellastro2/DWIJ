@@ -20,6 +20,7 @@ import com.yelldev.dwij.android.entitis.YaM.yWave
 import com.yelldev.dwij.android.entitis.iPlaylist
 import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.entitis.iTrackList
+import com.yelldev.dwij.android.entitis.yEntity
 import com.yelldev.dwij.android.utils.NoYandexLoginExceprion
 import com.yelldev.dwij.android.utils.TrackCache
 import com.yelldev.dwij.android.utils.yDiskLruCache
@@ -196,7 +197,7 @@ class yMediaStore(val mCtx: Context) {
 		}
 	}
 
-
+	var mLastLikeUpdate: Long = 0
 
 	suspend fun getLikedTracks(): YaLikedTracks {
 		var isNew = false
@@ -230,17 +231,22 @@ class yMediaStore(val mCtx: Context) {
 		} else
 			fResult = mLikedTracksList!!
 		if (!isNew){
-			CoroutineScope(Dispatchers.IO).launch {
-				val fRes = getYamClient()!!.getLiked("track")
-//				result -> {JSONObject@26173} "{"library":{"uid":1729972566,"revision":176,"playlistUuid":"3ae8e560-bfa1-54fb-a23a-6a5d7873b394","tracks":[{"id":"109140203","albumId":"24375438","timestamp":"2023-10-14T22:51:33+00:00"},{"id":"116611570","albumId":"27059544","timestamp":"2023-10-14T11:40:29+00:00"},{"id":"117446018","albumId":"27410628","timestamp":"2023-10-14T11:21:51+00:00"},{"id":"65677930","albumId":"10645498","timestamp":"2023-10-13T21:54:08+00:00"},{"id":"92952131","albumId":"18679651","timestamp":"2023-10-13T21:53:48+00:00"},{"id":"61338809","albumId":"9468918","timestamp":"2023-10-13T15:19:53+00:00"},{"id":"114335602","albumId":"26084605","timestamp":"2023-10-10T00:23:38+00:00"},{"id":"117608971","albumId":"27479601","timestamp":"2023-10-02T20:59:13+00:00"},{"id":"89325779","albumId":"17510096","timestamp":"2023-10-02T20:59:13+00:00"},{"id":"43724201","albumId":"5827408","timestamp":"2023-09-27T13:28:27+00:00"},{"id":"94298678","albumId":"19097174","timestamp":"2023-09-26T23:32:40+00:00"},{"id":"113351342","a"
-				val fLib = fRes.getJSONObject("result").getJSONObject("library")
-				val fNewOnlineList = mapper.readValue(fLib.toString(), YaLikedTracks::class.java)
-				if (fNewOnlineList.mRevision != mLikedTracksList!!.mRevision){
-					fNewOnlineList.postInit()
-					fNewOnlineList.postInit()
-					loadTraks(fNewOnlineList.mTrackList,fNewOnlineList.mId)
-					plDao.updatePlaylist(fNewOnlineList)
-					mLikedTracksList = fNewOnlineList
+			var fCurentTime = System.currentTimeMillis()
+			if(fCurentTime - 1000 * 10 > mLastLikeUpdate) {
+				mLastLikeUpdate = fCurentTime
+				CoroutineScope(Dispatchers.IO).launch {
+					val fRes = getYamClient()!!.getLiked("track")
+					//				result -> {JSONObject@26173} "{"library":{"uid":1729972566,"revision":176,"playlistUuid":"3ae8e560-bfa1-54fb-a23a-6a5d7873b394","tracks":[{"id":"109140203","albumId":"24375438","timestamp":"2023-10-14T22:51:33+00:00"},{"id":"116611570","albumId":"27059544","timestamp":"2023-10-14T11:40:29+00:00"},{"id":"117446018","albumId":"27410628","timestamp":"2023-10-14T11:21:51+00:00"},{"id":"65677930","albumId":"10645498","timestamp":"2023-10-13T21:54:08+00:00"},{"id":"92952131","albumId":"18679651","timestamp":"2023-10-13T21:53:48+00:00"},{"id":"61338809","albumId":"9468918","timestamp":"2023-10-13T15:19:53+00:00"},{"id":"114335602","albumId":"26084605","timestamp":"2023-10-10T00:23:38+00:00"},{"id":"117608971","albumId":"27479601","timestamp":"2023-10-02T20:59:13+00:00"},{"id":"89325779","albumId":"17510096","timestamp":"2023-10-02T20:59:13+00:00"},{"id":"43724201","albumId":"5827408","timestamp":"2023-09-27T13:28:27+00:00"},{"id":"94298678","albumId":"19097174","timestamp":"2023-09-26T23:32:40+00:00"},{"id":"113351342","a"
+					val fLib = fRes.getJSONObject("result").getJSONObject("library")
+					val fNewOnlineList =
+						mapper.readValue(fLib.toString(), YaLikedTracks::class.java)
+					if (fNewOnlineList.mRevision != mLikedTracksList!!.mRevision) {
+						fNewOnlineList.postInit()
+						fNewOnlineList.postInit()
+						loadTraks(fNewOnlineList.mTrackList, fNewOnlineList.mId)
+						plDao.updatePlaylist(fNewOnlineList)
+						mLikedTracksList = fNewOnlineList
+					}
 				}
 			}
 		}
@@ -442,12 +448,18 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 				fPlList = plDao.loadById(fId)
 	//			TODO NE DOLJEN B'IT'
 			}
-			if (fPlList!!.mTrackList.size < 1)
-			{
-				fPlList = updatePlayList(plDao,fPlList.mKindId)
+			if (fPlList.mIsnodata){
+				fPlList.postInit()
 			}
+//			if (fPlList!!.mTrackList.size < 1)
+//			{
+//				fPlList = updatePlayList(plDao,fPlList.mKindId)
+//			}
 	//		TODO else async check revision and update if !=
 	//				return fPlList
+			if (fPlList.mKindId == YaLikedTracks.LIKED_ID){
+				fPlList = getLikedTracks()
+			}
 			return withContext(Dispatchers.Main) {
 				fPlList
 			}
@@ -666,6 +678,19 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		return _getTrack(fTrackId).mDuration
 	}
 
+	suspend fun getWave(fObject: yEntity): iTrackList? {
+//		Например, станцией для запуска потока по треку будет `track:1234`
+		val fLogin = mCtx.getSharedPreferences(KeyStore.s_preff, Activity.MODE_PRIVATE)
+			.getString(com.yelldev.dwij.android.KeyStore.k_ya_login, "")
+		var fTag = ""
+		if (fObject is YaPlaylist){
+			fTag = "playlist:${fLogin}_${fObject.mKindId}"
+		}else if (fObject is YaTrack){
+			fTag = "track:${fObject.mId}"
+		}
+		return getWave(fTag,fObject.getTitle())
+	}
+
 	suspend fun getWave(fPlaylist: YaPlaylist): iTrackList? {
 		val fLogin = mCtx.getSharedPreferences(KeyStore.s_preff, Activity.MODE_PRIVATE)
 			.getString(com.yelldev.dwij.android.KeyStore.k_ya_login, "")
@@ -745,6 +770,8 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		}
 		return false
 	}
+
+
 
 
 }

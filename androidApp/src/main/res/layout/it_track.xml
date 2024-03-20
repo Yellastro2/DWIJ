@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="0dp"
             android:text="TextView"
+            style="@style/elipsizeTextVIew"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textSize="24sp" />
 
@@ -36,6 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
             android:text="TextView"
+            style="@style/elipsizeTextVIew"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
             android:textSize="16sp" />
     </LinearLayout>
