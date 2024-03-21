@@ -44,9 +44,12 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "http://www.example.com/gizmos” -->
 <!--                https://music.yandex.ru/album/19297693/track/90842069-->
-                <data android:scheme="https"
-                    android:host="music.yandex.ru"
-                    android:pathPrefix="/album" />
+                <!-- <data android:scheme="https"
+                    android:host="music.yandex.ru" -->
+                <data android:pathPrefix="/album" />
+                <data android:scheme="https"/>
+                <data android:host="music.yandex.ru"/>
+                <data android:pathPrefix="/users"/>
                 <!-- note that the leading "/" is required for pathPrefix-->
             </intent-filter>
         </activity>

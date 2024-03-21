@@ -4,7 +4,8 @@ import android.Manifest
 
 class KeyStore {
 	companion object {
-		val TAG = "DWIJ_TAG"
+        val USER = "user"
+        val TAG = "DWIJ_TAG"
 
 		val sPermission = Manifest.permission.READ_EXTERNAL_STORAGE
 

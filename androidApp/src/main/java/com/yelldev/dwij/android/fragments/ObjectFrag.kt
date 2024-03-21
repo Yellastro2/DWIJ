@@ -54,9 +54,16 @@ class ObjectFrag : Fragment(R.layout.fragment_object) {
             mViewModel.mValue = requireArguments().getString(KeyStore.VALUE)!!
 
             if (mViewModel.mType == PLAYLIST){
+
                 mViewModel.viewModelScope.launch(Dispatchers.Default) {
-                    mViewModel.mDataObject = yMediaStore.store(requireContext())
-                        .getYamPlaylist(mViewModel.mValue)
+                    requireArguments().getString(KeyStore.USER)?.let {
+                        mViewModel.mUser = it
+                        mViewModel.mDataObject = yMediaStore.store(requireContext())
+                            .getPlaylist(mViewModel.mValue, mViewModel.mUser!!)
+                    }
+                    if (mViewModel.mUser == null)
+                        mViewModel.mDataObject = yMediaStore.store(requireContext())
+                            .getYamPlaylist(mViewModel.mValue)
                     mViewModel.getAdapter(fMain)
                         .setList(mViewModel.mDataObject as iTrackList)
                     withContext(Dispatchers.Main){

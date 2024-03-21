@@ -103,10 +103,20 @@ class MainActivity : AppCompatActivity() {
                         return
                     }
                 }
+                if (fPaths[0] == "users"){
+                    val fUser = fPaths[1]
+                    if (fPaths[2] == "playlists"){
+                        val fKind = fPaths[3]
+                        showPlaylist(fUser = fUser,
+                            fKind = fKind)
+                        return
+                    }
+                }
             }
         }
         openTopAct()
     }
+
 
     @SuppressLint("Range")
     private fun getPlaylists() {
@@ -281,8 +291,17 @@ class MainActivity : AppCompatActivity() {
         fBndl.putString(KeyStore.TYPE,ObjectFrag.PLAYLIST)
         fBndl.putString(KeyStore.VALUE,fPlayList)
         mNavController.navigate(R.id.action_plListFrag_to_objectFrag,fBndl)
-//        mNavController.navigate(R.id.action_plListFrag_to_bigPlayerFrag)
-//        mPlayer?.setList(fPlayList)
+    }
+
+    private fun showPlaylist(fUser: String, fKind: String) {
+        if(mPlayer == null){
+            initPlayer()
+        }
+        val fBndl = Bundle()
+        fBndl.putString(KeyStore.TYPE,ObjectFrag.PLAYLIST)
+        fBndl.putString(KeyStore.VALUE,fKind)
+        fBndl.putString(KeyStore.USER,fUser)
+        mNavController.navigate(R.id.objectFrag,fBndl)
     }
 
     fun openTrackList(){

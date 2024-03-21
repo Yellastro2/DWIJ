@@ -385,6 +385,26 @@ class yMediaStore(val mCtx: Context) {
 		}
 	}
 
+	suspend fun getPlaylist(fKind: String, fUser: String): YaPlaylist? {
+		val f_new_pllist = getYamClient()!!.getPlaylistJSON(fKind,fUser)
+		val fNewPlList =
+			mapper.readValue(f_new_pllist.toString(), YaPlaylist::class.java)
+		fNewPlList.postInit()
+		mPlListMap[fNewPlList.mId] = fNewPlList
+//		TODO в базе все пл считаются текущего юзера
+//		if (plDao.loadById(fNewPlList.mId) == null)
+//			plDao.insertAll(fNewPlList)
+//		else
+////TODO if has update
+//			plDao.updatePlaylist(fNewPlList)
+		if(!mPlaylistUpdateObservers.containsKey(fNewPlList.mId))
+			mPlaylistUpdateObservers[fNewPlList.mId] = ArrayList()
+
+		loadTracksThread(f_new_pllist.getJSONArray("tracks"),fNewPlList.mId)
+
+		return fNewPlList
+	}
+
 
 	//Внутренний метод этого класса
 	private suspend fun updatePlayList(plDao: YaPlaylist.PlaylistDao, fKind: String): YaPlaylist {
@@ -451,10 +471,6 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 			if (fPlList.mIsnodata){
 				fPlList.postInit()
 			}
-//			if (fPlList!!.mTrackList.size < 1)
-//			{
-//				fPlList = updatePlayList(plDao,fPlList.mKindId)
-//			}
 	//		TODO else async check revision and update if !=
 	//				return fPlList
 			if (fPlList.mKindId == YaLikedTracks.LIKED_ID){
@@ -545,30 +561,12 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 //	TODO это вызвается после getYamPlaylist(), как раз за слушателем или сразу
 suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 
-//		return Single.create {
 			val fTrackResult = ArrayList<iTrack>()
 			val trDao = db.tracksDao()
 			for (qId in fTrackList)
 				fTrackResult.add(_getTrack(qId))
 
 			return fTrackResult
-//				if (mTrackMap.containsKey(qId)){
-//					fTrackResult.add(mTrackMap.get(qId) as iTrack)
-//				}else{
-//					var qTrack = trDao.loadById(qId)
-//					if( qTrack == null){
-//						val qData = mTrackDataStore.get(qId)
-//						qTrack = mapper.readValue(qData.toString(), YaTrack::class.java)
-//					}
-//					qTrack.postInit()
-//					putTrackToMap(qTrack)
-//					fTrackResult.add(qTrack)
-//				}
-//			}
-//			it.onSuccess(fTrackResult)
-//		}
-//			.observeOn(AndroidSchedulers.mainThread())
-//			.subscribeOn(Schedulers.newThread())
 	}
 
 	private fun adaptPlListArray(f_first_list: JSONArray): ArrayList<YaPlaylist> {

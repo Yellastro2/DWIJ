@@ -8,6 +8,7 @@ import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.entitis.yEntity
 
 class ObjectViewModel : ViewModel() {
+    var mUser: String? = null
     var mDataObject: yEntity? = null
     var mValue: String = ""
 
