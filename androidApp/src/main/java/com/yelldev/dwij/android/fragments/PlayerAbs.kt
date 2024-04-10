@@ -58,10 +58,13 @@ open class PlayerAbs() : Fragment() {
 		//val someInt = requireArguments().getInt("some_int")
 		mvNext.setOnClickListener {
 //
-			mPlayer?.nextTrack()
+			detachSeekbar()
+			GlobalScope.launch(Dispatchers.IO){mPlayer?.nextTrack()}
+
 		}
 
 		mvPrev.setOnClickListener {
+			detachSeekbar()
 			mPlayer?.prevTrack()
 
 		}
@@ -136,24 +139,6 @@ open class PlayerAbs() : Fragment() {
 			}
 		}
 
-//		val fSingle = fTrack.set_Cover_toView(yMediaStore.store(requireContext()),400)
-//		if(fSingle == null)
-//			mvCover?.setImageResource(R.drawable.logo_big)
-//		else
-//			fSingle.subscribe({mvCover?.setImageBitmap(it)},{Log.w("DWIJ_DEBUG",it)})
-
-//		Thread{
-//			val f_btm = fTrack.set_Cover_toView(yMediaStore.store(requireContext()),400)
-//			if (f_btm != null){
-//				mvArtist?.post {
-//					mvCover?.setImageBitmap(f_btm)
-//				}
-//			}else{
-//				mvArtist?.post {
-//					mvCover?.setImageResource(R.drawable.logo_big)
-//				}
-//			}
-//		}.start()
 		setRandomBtn()
 		initializeSeekBar()
 	}
@@ -198,6 +183,11 @@ open class PlayerAbs() : Fragment() {
 			mPlayer!!.onCustPrepareListener = {}
 			mvSeekBar!!.progress = 0
 		}
+	}
+
+	fun detachSeekbar(){
+		Log.i("DWIJ_DEBUG","detach seekbar call")
+		isHandled = false
 	}
 
 	fun setPause() {

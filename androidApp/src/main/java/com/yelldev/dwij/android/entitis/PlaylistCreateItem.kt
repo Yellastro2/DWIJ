@@ -35,6 +35,10 @@ class PlaylistCreateItem: iPlaylist {
 		TODO("Not yet implemented")
 	}
 
+	override fun getLink(): String {
+		TODO("Not yet implemented")
+	}
+
 	override fun addTracks(fTracks: ArrayList<iTrack>) {
 		TODO("Not yet implemented")
 	}

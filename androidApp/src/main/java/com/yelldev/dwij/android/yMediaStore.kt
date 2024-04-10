@@ -7,12 +7,14 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.yelldev.dwij.android.entitis.YaM.YaArtist
 import com.yelldev.dwij.android.entitis.YaM.YaLikedTracks
 import com.yelldev.dwij.android.entitis.YaM.YaPlaylist
 import com.yelldev.dwij.android.entitis.YaM.YaTrack
@@ -53,7 +55,12 @@ class yMediaStore(val mCtx: Context) {
 	val TAG = "yMediaStore"
 
 	@Database(entities = [YaPlaylist::class,YaTrack::class,
-		TrackCache.yTrackCash::class], version = 1)
+		TrackCache.yTrackCash::class], version = 2,
+		exportSchema = true,
+		autoMigrations = [
+			AutoMigration (from = 1, to = 2)
+		]
+	)
 	abstract class AppDatabase : RoomDatabase() {
 		abstract fun playlistsDao(): YaPlaylist.PlaylistDao
 		abstract fun tracksDao(): YaTrack.TrackDao
@@ -71,7 +78,7 @@ class yMediaStore(val mCtx: Context) {
 
 	companion object {
 		@SuppressLint("StaticFieldLeak")
-		var sStore: yMediaStore? = null
+		private var sStore: yMediaStore? = null
 		fun store(mCtx: Context): yMediaStore {
 			if(sStore == null)
 				sStore = yMediaStore(mCtx)
@@ -144,6 +151,8 @@ class yMediaStore(val mCtx: Context) {
 				fId,
 				remove = isLiked
 			)
+			if (mLikedTracksList == null || mLikedTracksList!!.mTrackList == null)
+				getLikedTracks()
 			if (isLiked)
 				do while (mLikedTracksList?.mTrackList?.remove(fId)!!)
 
@@ -254,7 +263,7 @@ class yMediaStore(val mCtx: Context) {
 		return fResult
 	}
 
-	private suspend fun loadTraks(fTraks: List<String>, mLikePlaylistId: String) {
+	private suspend fun loadTraks(fTraks: List<String>, fPlaylistId: String = "") {
 		CoroutineScope(Dispatchers.IO).launch {
 			var fIdList = JSONArray()
 			for (i in 0 until fTraks.size) {
@@ -262,7 +271,7 @@ class yMediaStore(val mCtx: Context) {
 			}
 			val fRes = getYamClient()!!.getObjList(yClient.TYPE_TRACK, fIdList)
 			fIdList = fRes.getJSONArray("result")
-			loadTracksThread(fIdList, mLikePlaylistId)
+			loadTracksThread(fIdList, fPlaylistId)
 		}
 	}
 
@@ -430,7 +439,7 @@ class yMediaStore(val mCtx: Context) {
 		return fNewPlList
 	}
 
-	fun loadTracksThread(fTrackList: JSONArray,fPlayListId: String){
+	fun loadTracksThread(fTrackList: JSONArray,fPlayListId: String = ""){
 		CoroutineScope(Dispatchers.IO).launch {
 //		}
 //		Thread{
@@ -440,14 +449,18 @@ class yMediaStore(val mCtx: Context) {
 			for (qTrackJSON in fArray) {
 				loadTrack(trDao,qTrackJSON,fPlayListId)
 				fProg ++
+				if (fPlayListId != "")
+					if (mPlaylistUpdateObservers.containsKey(fPlayListId))
+						for (qObs in mPlaylistUpdateObservers[fPlayListId]!!)
+							qObs.onUpdate(fProg,fArray.size)
+			}
+			if (fPlayListId != ""){
 				if (mPlaylistUpdateObservers.containsKey(fPlayListId))
 					for (qObs in mPlaylistUpdateObservers[fPlayListId]!!)
-						qObs.onUpdate(fProg,fArray.size)
+						qObs.onCompteate()
+				mPlaylistUpdateObservers.remove(fPlayListId)
 			}
-			if (mPlaylistUpdateObservers.containsKey(fPlayListId))
-				for (qObs in mPlaylistUpdateObservers[fPlayListId]!!)
-					qObs.onCompteate()
-			mPlaylistUpdateObservers.remove(fPlayListId)
+
 		}
 //			.start()
 	}
@@ -500,7 +513,9 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 		}
 	}
 
-	private suspend fun loadTrack(fDao: YaTrack.TrackDao, fTrackId: JSONObject, fPlId: String) {
+	private suspend fun loadTrack(fDao: YaTrack.TrackDao,
+								  fTrackId: JSONObject,
+								  fPlId: String = "") {
 		var fTrack = fDao.loadById(fTrackId.getString("id"))
 		var isFromDB = true
 		if (fTrack == null) {
@@ -526,7 +541,7 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 		putTrackToMap(fTrack)
 	}
 
-	private fun getTrackRequest(fTrackId: String) {
+	suspend fun getTrackRequest(fTrackId: String): YaTrack? {
 //		"""Получение трека/треков.
 //
 //        Args:
@@ -543,8 +558,14 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 //        """
 //        return self._get_list('track', track_ids, {'with-positions': str(with_positions)}, *args, **kwargs)
 
+		val fTrackJson = JSONArray("[$fTrackId]")
+		val fTrack = getYamClient()?.getObjList("track",fTrackJson)
 
-		TODO("Not yet implemented")
+		if (fTrack != null) {
+			val qTrack = mapper.readValue(fTrack.getJSONArray("result").getJSONObject(0).toString(), YaTrack::class.java)
+			return qTrack
+		}
+		return null
 	}
 
 	private fun putTrackToMap(fTrack: YaTrack){
@@ -564,7 +585,7 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 			val fTrackResult = ArrayList<iTrack>()
 			val trDao = db.tracksDao()
 			for (qId in fTrackList)
-				fTrackResult.add(_getTrack(qId))
+				fTrackResult.add(getTrack(qId))
 
 			return fTrackResult
 	}
@@ -573,9 +594,8 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		yTimer.timing(TAG, "adaptPlListArray() start")
 		val f_result_list = ArrayList<YaPlaylist>()
 		for (q_pllist in getArray<JSONObject>(f_first_list)) {
-			val q_obj = mapper.readValue<YaPlaylist>(q_pllist.toString())
-
-			f_result_list.add(q_obj)
+			val qObj = mapper.readValue<YaPlaylist>(q_pllist.toString())
+			f_result_list.add(qObj)
 		}
 		yTimer.timing(TAG, "adaptPlListArray() for")
 		return f_result_list
@@ -599,8 +619,7 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		return _getCover(fImage,fSize)
 	}
 
-	private suspend fun _getTrack(fTrackId: String): YaTrack {
-
+	suspend fun getTrack(fTrackId: String): YaTrack {
 		val trDao = db.tracksDao()
 
 		if (mTrackMap.containsKey(fTrackId)){
@@ -608,26 +627,20 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		}else{
 			var qTrack = trDao.loadById(fTrackId)
 			if( qTrack == null){
-				val qData = mTrackDataStore.get(fTrackId)
-				qTrack = mapper.readValue(qData.toString(), YaTrack::class.java)
+				if (mTrackDataStore.contains(fTrackId)){
+					val qData = mTrackDataStore.get(fTrackId)
+					qTrack = mapper.readValue(qData.toString(), YaTrack::class.java)
+				}else{
+					qTrack = getTrackRequest(fTrackId)!!
+					qTrack.postInit(this)
+					trDao.insertAll(qTrack)
+				}
+
 			}
 			qTrack.postInit(this)
 			putTrackToMap(qTrack)
 			return qTrack
 		}
-	}
-
-	suspend fun getTrack(fTrackId: String): YaTrack {
-		return _getTrack(fTrackId)
-//		return Single.create { subscriber ->
-//			try {
-//				subscriber.onSuccess(_getTrack(fTrackId))
-//			} catch (e: Exception) {
-//				subscriber.onError(e)
-//			}
-//		}
-//			.observeOn(AndroidSchedulers.mainThread())
-//			.subscribeOn(Schedulers.newThread())
 	}
 
 	val mTrackDataStore = ConcurrentHashMap<String,JSONObject>()
@@ -673,7 +686,7 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 
 	private suspend fun getDuration(fTrackId: String): Int {
 
-		return _getTrack(fTrackId).mDuration
+		return getTrack(fTrackId).mDuration
 	}
 
 	suspend fun getWave(fObject: yEntity): iTrackList? {
@@ -769,7 +782,18 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 		return false
 	}
 
+	suspend fun getArtist(fArtistId: String): YaArtist? {
+		val fArtistJson = JSONArray("[$fArtistId]")
+		val fArtist = getYamClient()?.getObjList("artist",fArtistJson)
 
+		print(fArtist)
+		if (fArtist != null) {
+			val fArtistObj = mapper.readValue(fArtist.getJSONArray("result").getJSONObject(0).toString(),
+				YaArtist::class.java)
+			return fArtistObj
+		}
+		return null
+	}
 
 
 }

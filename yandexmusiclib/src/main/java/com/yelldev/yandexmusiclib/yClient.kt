@@ -21,6 +21,8 @@ class yClient(val m_Token: String,val mUserID: String,val mLogin: String = "") {
 		val BASE_URL = "https://api.music.yandex.net"
 		val BASE_URL_2 = "https://api.music.yandex.ru"
 
+		val WEB_URL = "https://music.yandex.ru"
+
 		val TYPE_PLAYLIST = "playlist"
 		val TYPE_ARTIST = "artist"
 		val TYPE_TRACK = "track"
@@ -353,96 +355,9 @@ class yClient(val m_Token: String,val mUserID: String,val mLogin: String = "") {
 			e.printStackTrace()
 		}
 		return JSONObject("")
-//		url = f'{self.base_url}/rotor/station/{station}/tracks'
-//		url = f'{self.base_url}/rotor/stations/list'
 	}
 
-	fun users_playlist(
-		kind: String,
-		user_id: String? = null,
-		f_args: Map<String, String>
-	): JSONObject {
-//		Получение плейлиста или списка плейлистов по уникальным идентификаторам.
-//
-//        Note:
-//            Если передан один `kind`, то вернётся не список плейлистов, а один плейлист.
-//
-//        Args:
-//            kind (:obj:`str` | :obj:`int` | :obj:`list` из :obj:`str` | :obj:`int`): Уникальный идентификатор плейлиста
-//                или их список.
-//            user_id (:obj:`str` | :obj:`int`, optional): Уникальный идентификатор пользователя владеющим плейлистом.
-//            **kwargs (:obj:`dict`, optional): Произвольные аргументы (будут переданы в запрос).
-//
-//        Returns:
-//            :obj:`list` из :obj:`yandex_music.Playlist` | :obj:`yandex_music.Playlist` | :obj:`None`:
-//            Список плейлистов или плейлист, иначе :obj:`None`.
-//
-//        Raises:
-//            :class:`yandex_music.exceptions.YandexMusicError`: Базовое исключение библиотеки.
-//
-		val url = "$BASE_URL/users/$user_id/playlists/$kind"
-		val result = yNetwork.get(url,this)
-//
-		return result
-	}
 
-//	if user_id is None and self.me is not None:
-//	user_id = self.me.account.uid
-//
-//	if isinstance(kind, list):
-//	url = f'{self.base_url}/users/{user_id}/playlists'
-//
-//	data = {'kinds': kind}
-//
-//	result = self._request.post(url, data, *args, **kwargs)
-//
-//	return Playlist.de_list(result, self)
-//	else:
-//
-//
-//	fun users_playlists(kind: Union[List[Union[str, int]], str, int],
-//	user_id: Union[str, int] = None,
-//	*args,
-//	**kwargs,
-//	) -> Union[Playlist, List[Playlist]]:
-//	"""Получение плейлиста или списка плейлистов по уникальным идентификаторам.
-//
-//        Note:
-//            Если передан один `kind`, то вернётся не список плейлистов, а один плейлист.
-//
-//        Args:
-//            kind (:obj:`str` | :obj:`int` | :obj:`list` из :obj:`str` | :obj:`int`): Уникальный идентификатор плейлиста
-//                или их список.
-//            user_id (:obj:`str` | :obj:`int`, optional): Уникальный идентификатор пользователя владеющим плейлистом.
-//            **kwargs (:obj:`dict`, optional): Произвольные аргументы (будут переданы в запрос).
-//
-//        Returns:
-//            :obj:`list` из :obj:`yandex_music.Playlist` | :obj:`yandex_music.Playlist` | :obj:`None`:
-//            Список плейлистов или плейлист, иначе :obj:`None`.
-//
-//        Raises:
-//            :class:`yandex_music.exceptions.YandexMusicError`: Базовое исключение библиотеки.
-//        """
-//
-//	if user_id is None and self.me is not None:
-//	user_id = self.me.account.uid
-//
-//	if isinstance(kind, list):
-//	url = f'{self.base_url}/users/{user_id}/playlists'
-//
-//	data = {'kinds': kind}
-//
-//	result = self._request.post(url, data, *args, **kwargs)
-//
-//	return Playlist.de_list(result, self)
-//	else:
-//	url = f'{self.base_url}/users/{user_id}/playlists/{kind}'
-//	result = self._request.get(url, *args, **kwargs)
-//
-//	return Playlist.de_json(result, self)
-//
-//
-//	@log
 
 
 

@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.snackbar.Snackbar
+import com.yelldev.dwij.android.entitis.YaM.YaTrack
 import com.yelldev.dwij.android.entitis.YaM.yWave
 import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.entitis.iTrackList
@@ -552,6 +553,15 @@ class MainActivity : AppCompatActivity() {
             this@MainActivity.findViewById(android.R.id.content),
             "Error load track: No Yandex Music login", Snackbar.LENGTH_LONG
         ).show()
+    }
+
+    suspend fun showArtistChoise(fTrack: YaTrack) {
+        for (qArtist in fTrack.getArtistIds()){
+            yMediaStore.store(this).getArtist(qArtist)?.let{
+                print(it)
+            }
+//            print(qArtist)
+        }
     }
 
 

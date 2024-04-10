@@ -17,7 +17,9 @@ import android.media.MediaPlayer.OnBufferingUpdateListener
 import android.media.MediaPlayer.OnCompletionListener
 import android.media.MediaPlayer.OnPreparedListener
 import android.media.MediaPlayer.OnSeekCompleteListener
+import android.net.Uri
 import android.os.Binder
+import android.os.Handler
 import android.os.IBinder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
@@ -53,10 +55,12 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         val TAG = "PlayerService"
 
         val RANDOM_MODE = "random_mode"
+        val MIN_FOR_NEXT_LOAD = 10000
 
     }
 
-
+    var nextTrackFind = false
+    var nextTrackTryToFind = false
     var isRepeat: Boolean = false
     var mPlayerFrag: PlayerAbs? = null
     private val iBinder: IBinder = LocalBinder()
@@ -188,10 +192,6 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                     mPlayerFrag?.finishWaveDialog()
                 }
             }
-//            fStore.getTrackList(fWave.getList()).subscribe{
-//                    fList -> startPlayList(fList)
-//                mPlayerFrag?.finishWaveDialog()
-//            }
         }.start()
     }
 
@@ -234,10 +234,6 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                                     startPlayList(fRes)
                                     mPlayerFrag?.loadCompleate()
                                 }
-//                                fStore.getTrackList(fList!!.getList() as ArrayList<String>).subscribe{
-//                                        fListSinge -> startPlayList(fListSinge)
-//                                    mPlayerFrag?.loadCompleate()
-//                                }
                             }
                         })
                     else
@@ -245,29 +241,9 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                             val fRes = fStore.getTrackList(fList!!.getList() as ArrayList<String>)
                             startPlayList(fRes)
                         }
-//                        fStore.getTrackList(fList!!.getList() as ArrayList<String>).subscribe{
-//                                fListSinge -> startPlayList(fListSinge)}
                 }
             }
         }
-//            fStore.getYamPlaylist(fId).subscribe {fList ->
-//                mTrackList = fList
-//                if (fStore.mPlaylistUpdateObservers.containsKey(fList.mId))
-//                    fStore.mPlaylistUpdateObservers[fList.mId]?.add(object: yMediaStore.yObserver {
-//                        override fun onUpdate(fProg: Int,fMax: Int){
-//                            mPlayerFrag?.load(fProg,fMax)
-//                        }
-//                        override fun onCompteate(){
-//                            fStore.getTrackList(fList!!.getList() as ArrayList<String>).subscribe{
-//                                    fListSinge -> startPlayList(fListSinge)
-//                                mPlayerFrag?.loadCompleate()
-//                            }
-//                        }
-//                    })
-//                else
-//                    fStore.getTrackList(fList!!.getList() as ArrayList<String>).subscribe{
-//                            fListSinge -> startPlayList(fListSinge)}
-//            }
     }
 
     fun setTrack(fPos: Int){
@@ -294,7 +270,7 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                     snack.show()
                 }
 
-                nextTrack()
+                GlobalScope.launch(Dispatchers.IO){nextTrack()}
                 return
             }
         }
@@ -325,7 +301,7 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         }catch (e: NoYandexLoginExceprion){
 
             mActivity?.noYandexLoginError()
-            nextTrack()
+            GlobalScope.launch(Dispatchers.IO){nextTrack()}
         }
 
         ySession.setTrack(fTrack)
@@ -370,21 +346,47 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
             startForeground(NOTIFICATION_ID, f_notify)
             ySession.play()
             mMediaPlayer.start()
+            startListenPlayerSeek()
             mPlayerFrag?.setPlay()
             isWaitForFocus = true
 
+
         }
     }
+    var runnable: Runnable = Runnable{}
+    private var handler: Handler = Handler()
+    fun startListenPlayerSeek(){
+        runnable = Runnable {
+            if(mMediaPlayer.isPlaying) {
+                var fDur = mMediaPlayer.duration
+                val fCur = mMediaPlayer.currentPosition
 
-    fun nextTrack(){
-        yTimer.timing(TAG,"nextTrack()")
+                if (fDur - fCur < MIN_FOR_NEXT_LOAD) {
+                    GlobalScope.launch(Dispatchers.IO) { loadNextTrack() }
+                    runnable = Runnable{}
+                }
+                if (mMediaPlayer.isPlaying)
+                    handler.postDelayed(runnable, 1000)
+            }}
+        handler.postDelayed(runnable, 1000)
+
+    }
+
+    fun stopListenPlayerSeek(){
+        runnable = Runnable{}
+
+    }
+
+    suspend fun getNextTrackNumber(){
+        yTimer.timing(TAG,"getNextTrackNumber()")
+        nextTrackTryToFind = true
         if (is_random && mTrackList?.getType()!=yWave.type){
             var f_new = 0
             mLastTracks.add(0,_mList[m_CurentTrack])
             if (mLastTracks.size > _mList.size/2){
                 if(isRepeat){
                     mLastTracks.removeLast()
-                    yTimer.timing(TAG,"nextTrack(): !=yWave && isRepeat")
+                    yTimer.timing(TAG,"getNextTrackNumber(): !=yWave && isRepeat")
                 }else
                 {
                     val fFreshList = (_mList.clone() as ArrayList<iTrack>)
@@ -393,10 +395,10 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                     if(fFreshList.size<1){
                         if(isRepeatList()) {
                             mLastTracks.removeAll(mLastTracks.subList(_mList.size / 2,_mList.size-1 ))
-                            nextTrack()
+                            getNextTrackNumber()
                             return
                         }else{
-                            playWave()
+//                            playWave()
                             return
                         }
                     }
@@ -405,40 +407,190 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                     f_new = _mList.indexOf(fNewTrack)
                     mLastTracks.add(fNewTrack)
                     m_CurentTrack = f_new
-                    yTimer.timing(TAG,"nextTrack(): !=yWave && !=isRepeat")
-                    setTrack(_mList[m_CurentTrack])
-                    return
+                    yTimer.timing(TAG,"getNextTrackNumber(): !=yWave && !=isRepeat")
+//                    setTrack(_mList[m_CurentTrack])
+//                    return
                 }
 
-//                mLastTracks.removeLast()
+                //                mLastTracks.removeLast()
             }
             do{
                 f_new = Random.nextInt(_mList.size)
 
             }while ( _mList[f_new] in mLastTracks)
-            yTimer.timing(TAG,"nextTrack(): !=yWave do random while ")
+            yTimer.timing(TAG,"getNextTrackNumber(): !=yWave do random while ")
             m_CurentTrack = f_new
         }
         else{
             m_CurentTrack ++
             if (m_CurentTrack > _mList.size -2 && mTrackList?.getType() == yWave.type)
-                updWave()
+                GlobalScope.async(Dispatchers.IO){updWave()}.await()
             if (m_CurentTrack >= _mList.size)
                 if(isRepeat)
                     m_CurentTrack = 0
                 else{
-                    playWave()
+//                    playWave()
                     return
                 }
 
         }
+
+        nextTrackFind = true
+    }
+
+
+    //    easy mode, next track loadet only if in already kwonw: when it not last in list
+    suspend fun loadNextTrack(){
+        yTimer.timing(TAG,"loadNextTrack()")
+        GlobalScope.async(Dispatchers.IO){getNextTrackNumber()}.await()
+//        if (is_random && mTrackList?.getType()!=yWave.type){
+//            var f_new = 0
+//            mLastTracks.add(0,_mList[m_CurentTrack])
+//            if (mLastTracks.size > _mList.size/2){
+//                if(isRepeat){
+//                    mLastTracks.removeLast()
+//                    yTimer.timing(TAG,"loadNextTrack(): !=yWave && isRepeat")
+//                }else
+//                {
+//                    val fFreshList = (_mList.clone() as ArrayList<iTrack>)
+//                    fFreshList.removeAll(mLastTracks)
+//
+//                    if(fFreshList.size<1){
+//                        if(isRepeatList()) {
+//                            mLastTracks.removeAll(mLastTracks.subList(_mList.size / 2,_mList.size-1 ))
+//                            loadNextTrack()
+//                            return
+//                        }else{
+////                            playWave()
+//                            return
+//                        }
+//                    }
+//                    f_new = Random.nextInt(fFreshList.size)
+//                    val fNewTrack = fFreshList[f_new]
+//                    f_new = _mList.indexOf(fNewTrack)
+//                    mLastTracks.add(fNewTrack)
+//                    m_CurentTrack = f_new
+//                    yTimer.timing(TAG,"loadNextTrack(): !=yWave && !=isRepeat")
+////                    setTrack(_mList[m_CurentTrack])
+////                    return
+//                }
+//
+//    //                mLastTracks.removeLast()
+//            }
+//            do{
+//                f_new = Random.nextInt(_mList.size)
+//
+//            }while ( _mList[f_new] in mLastTracks)
+//            yTimer.timing(TAG,"loadNextTrack(): !=yWave do random while ")
+//            m_CurentTrack = f_new
+//        }
+//        else{
+//            m_CurentTrack ++
+//            if (m_CurentTrack > _mList.size -2 && mTrackList?.getType() == yWave.type)
+//                GlobalScope.async(Dispatchers.IO){updWave()}.await()
+//            if (m_CurentTrack >= _mList.size)
+//                if(isRepeat)
+//                    m_CurentTrack = 0
+//                else{
+////                    playWave()
+//                    return
+//                }
+//
+//        }
+
+    //    setTrack(_mList[m_CurentTrack])
+        if (_mList[m_CurentTrack] is YaTrack){
+            val fTrack = _mList[m_CurentTrack] as YaTrack
+            Thread{
+                val fStore = yMediaStore.store(applicationContext)
+                fStore.mTrackMemory.getCachedTrack(fTrack as YaTrack, {fPath ->
+                    Log.i("DWIJ_DEBUG", "prepare cached track: $fPath")
+                },{
+                        fUrl: Uri ->
+                    try {
+                        Log.i("DWIJ_DEBUG", "prepare url track: $fUrl")
+                    }catch (e: Exception) {
+                        Log.e("DWIJ_DEBUG", "loadNextTrack()\n ${fTrack.mTitle} - ${fTrack.mArtist} \n${fUrl}")
+                    }
+                })
+            }.start()
+        }
+        yTimer.timing(TAG,"loadNextTrack(): end")
+    }
+
+    suspend fun nextTrack(){
+        yTimer.timing(TAG,"nextTrack()")
+        if (!nextTrackTryToFind)
+            getNextTrackNumber()
+        if (!nextTrackFind){
+            playWave()
+        }else
+            setTrack(_mList[m_CurentTrack])
+        nextTrackFind = false
+        nextTrackTryToFind = false
         yTimer.timing(TAG,"nextTrack(): end")
-        setTrack(_mList[m_CurentTrack])
+//        if (is_random && mTrackList?.getType()!=yWave.type){
+//            var f_new = 0
+//            mLastTracks.add(0,_mList[m_CurentTrack])
+//            if (mLastTracks.size > _mList.size/2){
+//                if(isRepeat){
+//                    mLastTracks.removeLast()
+//                    yTimer.timing(TAG,"nextTrack(): !=yWave && isRepeat")
+//                }else
+//                {
+//                    val fFreshList = (_mList.clone() as ArrayList<iTrack>)
+//                    fFreshList.removeAll(mLastTracks)
+//
+//                    if(fFreshList.size<1){
+//                        if(isRepeatList()) {
+//                            mLastTracks.removeAll(mLastTracks.subList(_mList.size / 2,_mList.size-1 ))
+//                            nextTrack()
+//                            return
+//                        }else{
+//                            playWave()
+//                            return
+//                        }
+//                    }
+//                    f_new = Random.nextInt(fFreshList.size)
+//                    val fNewTrack = fFreshList[f_new]
+//                    f_new = _mList.indexOf(fNewTrack)
+//                    mLastTracks.add(fNewTrack)
+//                    m_CurentTrack = f_new
+//                    yTimer.timing(TAG,"nextTrack(): !=yWave && !=isRepeat")
+//                    setTrack(_mList[m_CurentTrack])
+//                    return
+//                }
+//
+////                mLastTracks.removeLast()
+//            }
+//            do{
+//                f_new = Random.nextInt(_mList.size)
+//
+//            }while ( _mList[f_new] in mLastTracks)
+//            yTimer.timing(TAG,"nextTrack(): !=yWave do random while ")
+//            m_CurentTrack = f_new
+//        }
+//        else{
+//            m_CurentTrack ++
+//            if (m_CurentTrack > _mList.size -2 && mTrackList?.getType() == yWave.type)
+//                GlobalScope.launch(Dispatchers.IO){updWave()}
+//            if (m_CurentTrack >= _mList.size)
+//                if(isRepeat)
+//                    m_CurentTrack = 0
+//                else{
+//                    playWave()
+//                    return
+//                }
+//
+//        }
+
+
     }
 
     private fun playWave() {
         if(mTrackList?.getType()==YaPlaylist.TYPE) {
-            mPlayerFrag?.setProgress()
+            GlobalScope.launch(Dispatchers.Main) { mPlayerFrag?.setProgress() }
+
             GlobalScope.launch(Dispatchers.IO){
                 val fStore = yMediaStore.store(applicationContext)
 
@@ -455,10 +607,11 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         }
     }
 
-    fun updWave(){
+    suspend fun updWave(){
         yTimer.timing(TAG,"updWave()")
         if(mTrackList?.getType()==yWave.type)
-            GlobalScope.launch(Dispatchers.IO){
+//            GlobalScope.launch(Dispatchers.IO)
+            {
                 yTimer.timing(TAG,"updWave(): launch")
                 val fStore = yMediaStore.store(applicationContext)
                 if (mTrackList != null){
@@ -480,11 +633,6 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
                 yTimer.timing(TAG,"updWave(): end")
 
             }
-//            Thread{
-//                val fStore = yMediaStore.store(applicationContext)
-//                val fNewTracks = fStore.getWaveNextTrack(mTrackList as yWave,m_CurentTrack)
-//                fStore.getTrackList(fNewTracks).subscribe{fList -> _mList.addAll(fList)}
-//            }.start()
     }
 
     private fun isRepeatList(): Boolean {
@@ -552,6 +700,7 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
     override fun onCompletion(mp: MediaPlayer?) {
         Log.i("DWIJ_DEBUG","onCompletion call")
         onCustCompletionListener()
+        stopListenPlayerSeek()
 //        val f_dur = mp?.duration
 //        val f_prog = mp?.currentPosition
 //        if (f_dur == 0 || f_prog == 0) {
@@ -561,7 +710,7 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         if (mPlayerState == PREPARE){
             mPlayerState = COMPLETE
 
-            nextTrack()
+            GlobalScope.launch(Dispatchers.IO){nextTrack()}
         }
 
     }

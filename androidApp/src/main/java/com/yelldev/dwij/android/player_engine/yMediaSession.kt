@@ -7,6 +7,9 @@ import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.media.session.MediaButtonReceiver
 import com.yelldev.dwij.android.entitis.iTrack
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 class yMediaSession(val mService: PlayerService,) {
 
@@ -85,7 +88,7 @@ class yMediaSession(val mService: PlayerService,) {
 		}
 
 		override fun onSkipToNext() {
-			fService.nextTrack()
+			GlobalScope.launch(Dispatchers.IO){fService.nextTrack()}
 		}
 
 		override fun onSkipToPrevious() {

@@ -30,20 +30,23 @@ abstract class yPlayList(
 	abstract var mTrackList: ArrayList<String>
 	abstract var mRevision: Int
 	abstract val mKindId: String
+	var mOwnerLogin = ""
+	open var mIsnodata = true
+
+
+
 	fun getCoverBtm(fClient: yClient): Bitmap? {
 		return fClient.getCover(mCover,200)
 	}
 
-
-	open var mIsnodata = true
-
+	fun getLink(): String {
+//		https://music.yandex.ru/users/Yellastro2/playlists/1053
+		return "${yClient.WEB_URL}/users/${mOwnerLogin}/playlists/${mKindId}"
+	}
 
 	open fun update(fJson: JSONObject){
-//		mTitle = fJson.getString("title")
 		mCount = fJson.getInt("trackCount")
 		mDuration = fJson.getInt("durationMs")
-//		mId = fJson.getString("kind")
-//		mCover = fJson.getJSONObject("cover")
 		mRevision = fJson.getInt("revision")
 
 		if(fJson.has("tracks")){

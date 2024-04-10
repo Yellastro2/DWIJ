@@ -1,0 +1,176 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "09845a320afe1a9091b9bcf27213aa3a",
+    "entities": [
+      {
+        "tableName": "playlists",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mKindId` TEXT NOT NULL, `mId` TEXT NOT NULL, `mTitle` TEXT NOT NULL, `mCount` INTEGER NOT NULL, `mDuration` INTEGER NOT NULL, `mImage` TEXT NOT NULL, `mRevision` INTEGER NOT NULL, `mTrackString` TEXT NOT NULL, `mOwnerLogin` TEXT NOT NULL, PRIMARY KEY(`mId`))",
+        "fields": [
+          {
+            "fieldPath": "mKindId",
+            "columnName": "mKindId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mId",
+            "columnName": "mId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mTitle",
+            "columnName": "mTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mCount",
+            "columnName": "mCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mDuration",
+            "columnName": "mDuration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mImage",
+            "columnName": "mImage",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mRevision",
+            "columnName": "mRevision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mTrackString",
+            "columnName": "mTrackString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mOwnerLogin",
+            "columnName": "mOwnerLogin",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "mId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "tracks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mId` TEXT NOT NULL, `mTitle` TEXT NOT NULL, `mCover` TEXT, `isAvaibale` INTEGER NOT NULL, `mDuration` INTEGER NOT NULL, `mArtString` TEXT NOT NULL, `mPlaylistString` TEXT NOT NULL, `mAlbumString` TEXT NOT NULL, PRIMARY KEY(`mId`))",
+        "fields": [
+          {
+            "fieldPath": "mId",
+            "columnName": "mId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mTitle",
+            "columnName": "mTitle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mCover",
+            "columnName": "mCover",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isAvaibale",
+            "columnName": "isAvaibale",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mDuration",
+            "columnName": "mDuration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mArtString",
+            "columnName": "mArtString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mPlaylistString",
+            "columnName": "mPlaylistString",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mAlbumString",
+            "columnName": "mAlbumString",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "mId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "tracks_cache",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`mId` TEXT NOT NULL, `mPath` TEXT NOT NULL, `mLastCall` INTEGER NOT NULL, PRIMARY KEY(`mId`))",
+        "fields": [
+          {
+            "fieldPath": "mId",
+            "columnName": "mId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mPath",
+            "columnName": "mPath",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mLastCall",
+            "columnName": "mLastCall",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "mId"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '09845a320afe1a9091b9bcf27213aa3a')"
+    ]
+  }
+}

@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.media.MediaPlayer
 import android.net.Uri
 import android.util.Log
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
@@ -33,13 +34,19 @@ class YaTrack(
 	@JsonProperty("durationMs")
 	val mDuration: Int
 ) : iTrack, yEntity, yTrack() {
+//	"fade":{"inStart":0,"inStop":2.4,"outStart":213.4,"outStop":218.4}
 
 	companion object {
 		val TAG = "YaTrack"
+		const val DEFAULT = "Неизвестный исполнитель"
 	}
 
-	class YaArtists(@JsonProperty("name")
-					val mName: String)
+	class YaArtists(
+//	{"id":19232422,"name":"Dieez","various":false,"composer":false,"cover":{"type":"from-album-cover","uri":"avatars.yandex.net\/get-music-content\/10092855\/6d37d53d.a.26681437-1\/%%","prefix":"6d37d53d.a.26681437-1"},"genres":[],"disclaimers":[]}
+		@JsonProperty("id")
+		val mId: String,
+		@JsonProperty("name")
+		val mName: String)
 
 	class YaIdEntity(@JsonProperty("id")
 					val mId: String)
@@ -49,6 +56,11 @@ class YaTrack(
 	lateinit var _mArtists: List<YaArtists>
 
 	var mArtString = ""
+//	@Ignore
+	@ColumnInfo(defaultValue = DEFAULT)
+	var mArtistIdString = ""
+
+	fun getArtistIds() = mArtistIdString.split(",")
 
 	@get:Ignore
 	override val mPath: String get() = "TODO"
@@ -56,9 +68,9 @@ class YaTrack(
 	@get:Ignore
 	override val mArtist: String get() {
 		if (mArtString.isNullOrEmpty()&&this::_mArtists.isInitialized){
-			for (q_artist in _mArtists)
-				mArtString += q_artist.mName + ", "
-
+			for (qArtist in _mArtists) {
+				mArtString += qArtist.mName + ", "
+			}
 			mArtString = mArtString.removeSuffix(", ")
 		}
 		return mArtString
@@ -78,10 +90,23 @@ class YaTrack(
 
 	suspend fun postInit(fStore: yMediaStore){
 		if(this::_mArtists.isInitialized){
-			for (q_artist in _mArtists)
-				mArtString += q_artist.mName + ", "
-
+			for (qArtist in _mArtists) {
+				mArtString += qArtist.mName + ", "
+				mArtistIdString += qArtist.mId + ","
+			}
 			mArtString = mArtString.removeSuffix(", ")
+			mArtistIdString = mArtistIdString.removeSuffix(",")
+		}
+		if( mArtistIdString == "" || mArtistIdString == DEFAULT){
+			Log.i(TAG,"mArtistIdString = default, load for artist")
+			fStore.getTrackRequest(mId)?.let {
+				if (it._mArtists.size == 0)
+					it._mArtists = listOf(YaArtists("-1","-1"))
+				it.postInit(fStore)
+				mArtistIdString = it.mArtistIdString
+				fStore.db.tracksDao().updatePlaylist(this)
+			}
+
 		}
 		if(mPlaylistString.length > 0 && mPlaylists.size < 1){
 			val fList = mPlaylistString.split(";")
@@ -170,6 +195,8 @@ class YaTrack(
 	override fun getInfo(): String {
 		return mArtist
 	}
+
+
 
 	override fun addPlaylist(fStore: yMediaStore, fPlId: String) {
 		mPlaylists.add(fPlId)

@@ -100,6 +100,11 @@ abstract class yTrack() {
 		}
 	}
 
+	fun getLink(): String {
+//		https://music.yandex.ru/album/9378276/track/58567502
+		return "${yClient.WEB_URL}/album/${mAlbums[0]}/track/${mId}"
+	}
+
 //	init {
 //		mId = m_Data.getString("id")
 //		title = m_Data.getString("title")

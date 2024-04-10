@@ -70,6 +70,16 @@ class YaPlaylist(
 
 
 	@Ignore
+	@JsonProperty("owner")
+	lateinit var mOwner: yOwner
+
+	class yOwner(
+//		owner -> {JSONObject@6956} "{"uid":1729972566,"login":"Yellastro2","name":"Yellastro2","sex":"male","verified":false}"
+		@JsonProperty("login")val mLogin: String,
+	)
+
+
+	@Ignore
 	override var mIsnodata = true
 
 	@Ignore
@@ -79,6 +89,12 @@ class YaPlaylist(
 
 	open fun postInit() {
 		mIsnodata = false
+
+		if (mOwnerLogin == ""){
+			if(this::mOwner.isInitialized)
+				mOwnerLogin = mOwner.mLogin
+		}
+
 		if (mTrackString.length > 0) {
 			val fTracks = mTrackString.split(";")
 			for (qOb in fTracks) {
@@ -122,6 +138,7 @@ class YaPlaylist(
 	override fun getInfo(): String {
 		return "$mCount tracks"
 	}
+
 
 	@Ignore
 	override fun getList(): ArrayList<String> {
