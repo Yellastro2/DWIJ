@@ -125,10 +125,10 @@ class yClient(val m_Token: String,val mUserID: String,val mLogin: String = "") {
 //
 //		Все официальные клиенты выполняют запросы с `settings2 = True`.
 
-		val fFbFinish = rotorStationFBTrackFinished(fStationId,
-			fTrack = fPrevTrack)
-
-		val fFbStart = rotorStationFBTrackStarted(fStationId, fTrack = fNextTrack)
+//		val fFbFinish = rotorStationFBTrackFinished(fStationId,
+//			fTrack = fPrevTrack)
+//
+//		val fFbStart = rotorStationFBTrackStarted(fStationId, fTrack = fNextTrack)
 
 		val fUrl = "$BASE_URL/rotor/session/${fStationId}/tracks"
 		val fParams = JSONObject("{'settings2': 'True'}")
@@ -152,9 +152,10 @@ class yClient(val m_Token: String,val mUserID: String,val mLogin: String = "") {
 
 	fun rotorStationFBTrackFinished(fStationId: String,
 								   	fTrack: String,
-								   	fBatch: String = "",): JSONObject{
+								   	fBatch: String = "",
+									fSeconds: Float = 0.1f): JSONObject{
 
-		val fSeconds: Float = 0.1f
+//		val fSeconds: Float = 0.1f
 		return feedback(fStationId,FeedbackType.TRACK_FINISHED,fTrack=fTrack,fSeconds=fSeconds,  fBatch = fBatch)
 	}
 
@@ -245,8 +246,8 @@ class yClient(val m_Token: String,val mUserID: String,val mLogin: String = "") {
 		return yNetwork.get_cover(this@yClient,f_adr_part,f_size)
 	}
 
-	fun getStream(f_adr_part: String,f_size: Int): InputStream? {
-		return yNetwork.get_stream(this@yClient, f_adr_part, f_size)
+	fun getStream(f_adr_part: String): InputStream? {
+		return yNetwork.get_stream(this@yClient, f_adr_part)
 	}
 
 	fun getCover(f_cover_data: JSONObject,f_size: Int): Bitmap? {

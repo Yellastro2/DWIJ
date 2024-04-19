@@ -34,7 +34,7 @@ class yWave(
 	}
 
 	override suspend fun getTracks(fStore: yMediaStore): ArrayList<iTrack> {
-		TODO("Not yet implemented")
+		return fStore.getTrackList(getList())
 	}
 
 	override fun addTracks(fTracks: ArrayList<iTrack>) {

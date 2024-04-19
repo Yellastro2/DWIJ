@@ -260,19 +260,21 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
 //         потому что там двухсторонняя связь между ползунком и прогрессом плеера,
 //         если не отвязать, всё взорвется нахуй
         onCustCompletionListener()
-        if(fTrack is YaTrack){
-            if(!fTrack.isAvaibale){
-                mActivity?.let {
-                    val snack = Snackbar.make(
-                        it.findViewById(android.R.id.content),
-                        "${fTrack.mTitle} not avaible cuz of war", Snackbar.LENGTH_LONG
-                    )
-                    snack.show()
-                }
 
-                GlobalScope.launch(Dispatchers.IO){nextTrack()}
-                return
-            }
+        if(fTrack is YaTrack){
+//            if(!fTrack.isAvaibale){
+//
+//                mActivity?.let {
+//                    val snack = Snackbar.make(
+//                        it.findViewById(android.R.id.content),
+//                        "${fTrack.mTitle} not avaible cuz of war", Snackbar.LENGTH_LONG
+//                    )
+//                    snack.show()
+//                }
+//
+//                GlobalScope.launch(Dispatchers.IO){nextTrack()}
+//                return
+//            }
         }
         try {
             Log.i("DWIJ_DEBUG","setTrack reset() Player")
@@ -287,27 +289,78 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
         try {
             fTrack.setToPlayer(mMediaPlayer,applicationContext
             ) {//state 2
-                yTimer.timing(TAG,"setTrack(): setToPlayer()")
-                mMediaPlayer.prepareAsync()
-                Log.i("DWIJ_DEBUG","setTrack prepareAsync() Player")
+                if (it==1) {
+                    yTimer.timing(TAG, "setTrack(): setToPlayer()")
+                    mMediaPlayer.prepareAsync()
+                    Log.i("DWIJ_DEBUG", "setTrack prepareAsync() Player")
 
-                LOG.info( "setTrack prepare player")
-                mActivity?.runOnUiThread {
-                    mPlayerFrag?.setTrack(fTrack,mTrackList) }
+                    LOG.info("setTrack prepare player")
+                    mActivity?.runOnUiThread {
+                        mPlayerFrag?.setTrack(fTrack, mTrackList)
+                    }
 
-                yTimer.timing(TAG,"setTrack(): setToPlayer() end")
-                return@setToPlayer 0
+                    yTimer.timing(TAG, "setTrack(): setToPlayer() end")
+                    return@setToPlayer
+                }else{
+                    if(fTrack is YaTrack) {
+                        if (!fTrack.isAvaibale) {
+
+                            mActivity?.let {
+                                val snack = Snackbar.make(
+                                    it.findViewById(android.R.id.content),
+                                    "${fTrack.mTitle} not avaible cuz of war", Snackbar.LENGTH_LONG
+                                )
+                                snack.show()
+                            }
+
+
+                        }
+                    }else mActivity?.let {
+                        val snack = Snackbar.make(
+                            it.findViewById(android.R.id.content),
+                            "${fTrack.mTitle} broken", Snackbar.LENGTH_LONG
+                        )
+                        snack.show()
+                    }
+                    GlobalScope.launch(Dispatchers.IO) { nextTrack() }
+                    return@setToPlayer
+                }
             }
         }catch (e: NoYandexLoginExceprion){
 
             mActivity?.noYandexLoginError()
             GlobalScope.launch(Dispatchers.IO){nextTrack()}
+        }catch (e: Exception){
+            if(fTrack is YaTrack) {
+                if (!fTrack.isAvaibale) {
+
+                    mActivity?.let {
+                        val snack = Snackbar.make(
+                            it.findViewById(android.R.id.content),
+                            "${fTrack.mTitle} not avaible cuz of war", Snackbar.LENGTH_LONG
+                        )
+                        snack.show()
+                    }
+
+                    GlobalScope.launch(Dispatchers.IO) { nextTrack() }
+                    return
+                }
+            }
         }
 
         ySession.setTrack(fTrack)
 
         val f_notify = PlayerNotification.getNotify(this@PlayerService,ySession.token,
             fTrack.mTitle,fTrack.mArtist)
+
+        if (mTrackList is yWave)
+            GlobalScope.launch(Dispatchers.Default) {
+                yMediaStore.store(applicationContext)
+                    .getYamClient()
+                    ?.rotorStationFBTrackStarted(
+                        (mTrackList as yWave).mId,
+                        fTrack.mId)
+            }
 
         startForeground(NOTIFICATION_ID, f_notify)
         yTimer.timing(TAG,"setTrack() end")
@@ -503,7 +556,7 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
             val fTrack = _mList[m_CurentTrack] as YaTrack
             Thread{
                 val fStore = yMediaStore.store(applicationContext)
-                fStore.mTrackMemory.getCachedTrack(fTrack as YaTrack, {fPath ->
+                fStore.mTrackMemory.getCachedTrack(fTrack as YaTrack, {fPath,isRest ->
                     Log.i("DWIJ_DEBUG", "prepare cached track: $fPath")
                 },{
                         fUrl: Uri ->
@@ -699,6 +752,17 @@ class PlayerService : Service(), OnCompletionListener, OnPreparedListener,
     var onCustCompletionListener: ()-> Unit = {}
     override fun onCompletion(mp: MediaPlayer?) {
         Log.i("DWIJ_DEBUG","onCompletion call")
+//        throw Exception("test exception")
+        if (mTrackList is yWave)
+            GlobalScope.launch(Dispatchers.Default) {
+                val fTrack = mList[m_CurentTrack] as YaTrack
+                yMediaStore.store(applicationContext)
+                    .getYamClient()
+                    ?.rotorStationFBTrackFinished(
+                        (mTrackList as yWave).mId,
+                        mList[m_CurentTrack].mId,
+                        fSeconds = fTrack.mDuration.toFloat())
+            }
         onCustCompletionListener()
         stopListenPlayerSeek()
 //        val f_dur = mp?.duration

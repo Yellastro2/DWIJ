@@ -242,10 +242,10 @@ class yNetwork {
             }
         }
 
-        fun get_stream(fCli: yClient,f_adr_part: String,f_size: Int): InputStream? {
-            val f_size_str = "$f_size"+"x$f_size"
-            val f_adr_part2 = f_adr_part.replace("%%",f_size_str)
-            val f_adr = "https://"+f_adr_part2
+        fun get_stream(fCli: yClient,f_adr_part: String): InputStream? {
+//            val f_size_str = "$f_size"+"x$f_size"
+//            val f_adr_part2 = f_adr_part.replace("%%",f_size_str)
+            val f_adr = "https://"+f_adr_part
 
 
             val f_url = URL(f_adr)

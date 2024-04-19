@@ -16,7 +16,7 @@ interface iTrack {
 	val mCover: String?
 	var mPlaylists: LinkedHashSet<String>
 
-	fun setToPlayer(f_Player: MediaPlayer, f_Ctx: Context, f_clb: () -> Int)
+	fun setToPlayer(f_Player: MediaPlayer, f_Ctx: Context, f_clb: (Int) -> Unit)
 	suspend fun set_Cover_toView(fStore: yMediaStore, f_size:Int = 200): Bitmap?
 	fun addPlaylist(fStore: yMediaStore, fPlId: String)
 }

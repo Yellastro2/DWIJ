@@ -19,6 +19,11 @@ import com.yelldev.dwij.android.entitis.iTrack
 import com.yelldev.dwij.android.entitis.yEntity
 import com.yelldev.dwij.android.yMediaStore
 import com.yelldev.yandexmusiclib.kot_utils.yTrack
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 
 @Entity(tableName = "tracks")
 class YaTrack(
@@ -59,6 +64,7 @@ class YaTrack(
 //	@Ignore
 	@ColumnInfo(defaultValue = DEFAULT)
 	var mArtistIdString = ""
+
 
 	fun getArtistIds() = mArtistIdString.split(",")
 
@@ -150,15 +156,15 @@ class YaTrack(
 //		mPlaylistString.indexOf(fPlaylist.mId)
 	}
 
-	override fun setToPlayer(fPlayer: MediaPlayer, f_Ctx: Context,f_clb: ()-> Int) {
-		Thread{
+	override fun setToPlayer(fPlayer: MediaPlayer, f_Ctx: Context,fClb: (Int)-> Unit) {
+		GlobalScope.launch(Dispatchers.Default) {
 			val fStore = yMediaStore.store(f_Ctx)
-
-			fStore.mTrackMemory.getCachedTrack(this, {fPath ->
+			try{
+			fStore.mTrackMemory.getCachedTrack(this@YaTrack, {fPath, isRestrict ->
 				Log.i("DWIJ_DEBUG", "play cached track: $fPath")
 				fPlayer.setDataSource(fPath)
 			},{
-				fUrl: Uri ->
+					fUrl: Uri ->
 				try {
 					Log.i("DWIJ_DEBUG", "play url track: $fUrl")
 					fPlayer.setDataSource(f_Ctx, fUrl)
@@ -168,9 +174,13 @@ class YaTrack(
 					throw Exception(f_msg, e)
 				}
 			})
-			f_clb()
-
-		}.start()
+				fClb(1)}
+			catch (e: Exception){
+				Log.e("DWIJ_DEBUG", "setToPlayer()\n ${mTitle} - ${mArtist} ")
+				val f_msg = e.message + "\nsetToPlayer()\n ${mTitle} - ${mArtist} "
+				fClb(0)
+			}
+		}
 
 	}
 

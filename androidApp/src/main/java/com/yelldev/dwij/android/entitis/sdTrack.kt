@@ -38,10 +38,10 @@ class sdTrack (
         return Uri.parse(mPath)
     }
 
-    override fun setToPlayer(f_Player: MediaPlayer,f_Ctx: Context,f_clb: ()-> Int) {
+    override fun setToPlayer(f_Player: MediaPlayer,f_Ctx: Context,f_clb: (Int)-> Unit) {
         f_Player
             .setDataSource(f_Ctx, getUri())
-        f_clb()
+        f_clb(1)
     }
 
     override suspend fun set_Cover_toView(fStore: yMediaStore, f_size: Int): Bitmap? {

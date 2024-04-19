@@ -45,6 +45,7 @@ class BigPlayerFrag() :
 	lateinit var mvToPlaylist: View
 	lateinit var mvAlbum: TextView
 	lateinit var mvLike: ImageView
+	lateinit var mvRestrict: TextView
 
 	var mTrack: iTrack? = null
 
@@ -64,13 +65,14 @@ class BigPlayerFrag() :
 		mvTitle = view.findViewById(R.id.txt_title)
 		mvArtist = view.findViewById(R.id.txt_artist)
 		mvCover = view.findViewById(R.id.fr_player_cover)
-		mvPlay = view.findViewById<ImageButton>(R.id.btn_play)
-		mvPrev = view.findViewById<ImageButton>(R.id.btn_prev)
-		mvNext = view.findViewById<ImageButton>(R.id.btn_next)
-		mvRandom = view.findViewById<ImageButton>(R.id.fr_player_random)
+		mvPlay = view.findViewById(R.id.btn_play)
+		mvPrev = view.findViewById(R.id.btn_prev)
+		mvNext = view.findViewById(R.id.btn_next)
+		mvRandom = view.findViewById(R.id.fr_player_random)
 		mvMainTitle = view.findViewById(R.id.bigplayer_main_title)
-		mvAlbum = view.findViewById<TextView>(R.id.fr_player_album_name)
-		mvLike = view.findViewById<ImageView>(R.id.fr_player_like)
+		mvAlbum = view.findViewById(R.id.fr_player_album_name)
+		mvLike = view.findViewById(R.id.fr_player_like)
+		mvRestrict =  view.findViewById(R.id.fr_player_restrict)
 
 		mvTitle.setOnClickListener { openTrackInfo() }
 
@@ -224,7 +226,8 @@ class BigPlayerFrag() :
 		super.setTrack(fTrack, fTrackList)
 		mTrack = fTrack
 		val fStore = yMediaStore.store(requireContext())
-		if (fTrack is YaTrack)
+		if (fTrack is YaTrack){
+			mvRestrict.visibility =  if (!fTrack.isAvaibale) View.VISIBLE else View.GONE
 			lifecycleScope.launch(Dispatchers.Default){
 				val fCashed = fStore.getTrack(fTrack.mId)
 				if (fCashed != fTrack) {
@@ -235,6 +238,8 @@ class BigPlayerFrag() :
 
 				}
 			}
+		}
+
 
 
 

@@ -55,10 +55,11 @@ class yMediaStore(val mCtx: Context) {
 	val TAG = "yMediaStore"
 
 	@Database(entities = [YaPlaylist::class,YaTrack::class,
-		TrackCache.yTrackCash::class], version = 2,
+		TrackCache.yTrackCash::class], version = 3,
 		exportSchema = true,
 		autoMigrations = [
-			AutoMigration (from = 1, to = 2)
+			AutoMigration (from = 1, to = 2),
+			AutoMigration (from = 2, to = 3)
 		]
 	)
 	abstract class AppDatabase : RoomDatabase() {
@@ -603,11 +604,13 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 
 	private suspend fun _getCover(fImage: String, fSize: Int): Bitmap? {
 //		avatars.yandex.net/get-music-content/1781407/a49e1148.a.9976672-1/%%
-		val fKey = "${fImage}_$fSize"
+//		val fKey = "${fImage}_$fSize"
+		val f_size_str = "$fSize"+"x$fSize"
+		val fKey = fImage.replace("%%",f_size_str)
 		val fCached = LRUMemory.getBitmapFromDiskCache(fKey)
 		if (fCached == null) {
 			if (getYamClient() == null) throw (Exception("no Yandex Client attached!"))
-			getYamClient()!!.getStream(fImage, fSize).let {
+			getYamClient()!!.getStream(fKey).let {
 				val bmp = BitmapFactory.decodeStream(it)
 				LRUMemory.addBitmapToCache(fKey, bmp)
 			}
@@ -644,6 +647,7 @@ suspend fun getTrackList(fTrackList: ArrayList<String>): ArrayList<iTrack> {
 	}
 
 	val mTrackDataStore = ConcurrentHashMap<String,JSONObject>()
+
 
 
 // new 488,284,082,003,476

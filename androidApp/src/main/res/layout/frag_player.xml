@@ -119,6 +119,12 @@
                 android:text="@string/title_placehold"
                 android:textSize="20sp" />
 
+            <TextView
+                android:id="@+id/fr_player_restrict"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="restricted" />
+
         </LinearLayout>
 
     </RelativeLayout>

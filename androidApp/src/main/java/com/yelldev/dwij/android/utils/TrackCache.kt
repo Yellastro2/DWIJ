@@ -3,6 +3,7 @@ package com.yelldev.dwij.android.utils
 import android.net.Uri
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Entity
@@ -30,6 +31,12 @@ import java.nio.file.Paths
 
 class TrackCache(mStore: yMediaStore) {
 
+	companion object {
+		const val YANDEX = "yandex"
+		val RESTRICTED  = 1
+		const val DEFAULT = 0
+	}
+
 	val mCtx = mStore.mCtx
 	var mYamClient: yClient? = null
 	val db = mStore.db
@@ -51,7 +58,12 @@ class TrackCache(mStore: yMediaStore) {
 	data class yTrackCash(@PrimaryKey
 						  val mId: String,
 						  var mPath: String,
-						  var mLastCall: Long){
+						  var mLastCall: Long,
+						  @ColumnInfo(defaultValue = DEFAULT.toString())
+						  var mType: Int,
+						  @ColumnInfo(defaultValue = YANDEX)
+						  var mSource: String
+		){
 		@Dao
 		interface TrackCacheDao {
 
@@ -73,7 +85,7 @@ class TrackCache(mStore: yMediaStore) {
 	}
 
 	fun getCachedTrack(fYTrack: YaTrack,
-					   fOnCached: (String) -> Unit,
+					   fOnCached: (String,Boolean) -> Unit,
 					   fOnMissed: (Uri) -> Unit)
 	{
 		val fDaoCache = db.TrackCacheDao()
@@ -97,7 +109,8 @@ class TrackCache(mStore: yMediaStore) {
 						}catch (e: Exception){
 							Log.e(TAG,e.stackTraceToString())
 						}
-						fCached = yTrackCash(fYTrack.mId,fPath,System.currentTimeMillis())
+						fCached = yTrackCash(fYTrack.mId,fPath,System.currentTimeMillis(),
+							0, YANDEX)
 						fDaoCache.insertAll(fCached)
 						var fCacheSize = dirSize(File(sMp3CacheDir))
 						val fMaxSize = mCtx.getSharedPreferences(
@@ -106,9 +119,28 @@ class TrackCache(mStore: yMediaStore) {
 						).getLong(kTrackCacheSize,sDefTrackCache)
 						while (fCacheSize > fMaxSize) {
 							val fLast = fDaoCache.getLast()
-							File(fLast.mPath).delete()
-							fDaoCache.delete(fLast)
-							fCacheSize = dirSize(File(sMp3CacheDir))
+							if (fLast.mType!= RESTRICTED){
+								try {
+									val fLink = yTrack.mp3Link(mYamClient!!, fLast.mId)?.get()
+									val fUri = Uri.parse(fLink)
+									fOnMissed(fUri)
+									val url = URL(fLink)
+									url.openStream().use {
+
+									}
+									File(fLast.mPath).delete()
+									fDaoCache.delete(fLast)
+									fCacheSize = dirSize(File(sMp3CacheDir))
+								}catch (e: Exception){
+									fLast.mType = RESTRICTED
+									fLast.mLastCall = System.currentTimeMillis()
+									fDaoCache.updateRow(fLast)
+								}
+
+							}
+//							File(fLast.mPath).delete()
+//							fDaoCache.delete(fLast)
+//							fCacheSize = dirSize(File(sMp3CacheDir))
 						}
 
 
@@ -123,7 +155,7 @@ class TrackCache(mStore: yMediaStore) {
 				.subscribe()
 
 		}else{
-			fOnCached(fCached.mPath)
+			fOnCached(fCached.mPath, fCached.mType == RESTRICTED)
 			fCached.mLastCall = System.currentTimeMillis()
 			fDaoCache.updateRow(fCached)
 			/*проверяем размер кеша если больше разрешенного:

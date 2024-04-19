@@ -39,6 +39,7 @@ import com.yelldev.dwij.android.utils.PermissionManager
 import com.yelldev.dwij.android.utils.yLog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.util.logging.Logger
 
 
@@ -71,6 +72,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        throw Exception("test exception")
         setContentView(R.layout.lay_main)
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.fragmentContainerView) as NavHostFragment
@@ -116,6 +118,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
         openTopAct()
+    }
+
+    fun checkCrashLogs(){
+        val fLogDir = File(
+            filesDir.path + "/files/"
+            )
+        fLogDir.list().filter { it -> it.contains("stacktrace") }
     }
 
 
