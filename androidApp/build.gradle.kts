@@ -14,7 +14,7 @@ android {
         minSdk = 26
         targetSdk = 29
         versionCode = 5
-        versionName = "0.0.11_next_track_preload"
+        versionName = "0.0.12_chash_logger"
         manifestPlaceholders["YANDEX_CLIENT_ID"] = "23cabbbdc6cd418abb4b39c32c41195d"
 
         ksp {

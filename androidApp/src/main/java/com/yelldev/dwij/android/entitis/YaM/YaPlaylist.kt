@@ -132,6 +132,8 @@ class YaPlaylist(
 //	}
 
 	override suspend fun getImage(fClient: yMediaStore): Bitmap? {
+		if (mImage.isNullOrEmpty())
+			return null
 		return fClient.getCoverAsync(mImage,200)
 	}
 

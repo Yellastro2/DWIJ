@@ -2,8 +2,10 @@ package com.yelldev.dwij.android
 
 import android.Manifest
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.R.id.message
 import android.annotation.SuppressLint
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.database.Cursor
@@ -14,7 +16,13 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.MediaStore
 import android.util.Log
+import android.view.View
+import android.view.View.OnClickListener
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -118,13 +126,112 @@ class MainActivity : AppCompatActivity() {
             }
         }
         openTopAct()
+        checkCrashLogs()
     }
+
+    fun getNavBarHeight(context: Context): Int {
+        var result = 0
+        val resourceId =
+            context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = context.resources.getDimensionPixelSize(resourceId)
+        }
+        return result
+    }
+
+    fun showYSnack(fBody: String,
+                   fBtn1: String,
+                   fAction1: OnClickListener,
+                   fBtn2: String,
+                   fAction2: OnClickListener,
+                   fLength: Int = Snackbar.LENGTH_LONG){
+        // Create the Snackbar
+        val objLayoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        val snackbar =
+            Snackbar.make(findViewById<View>(android.R.id.content), fBody, fLength)
+
+        // Get the Snackbar layout view
+        val layout = snackbar.getView() as ViewGroup
+
+        // Set snackbar layout params
+        val navbarHeight: Int = getNavBarHeight(this)
+        val parentParams = layout.layoutParams as FrameLayout.LayoutParams
+        parentParams.setMargins(0, 0, 0, 0 - navbarHeight + 50)
+        layout.layoutParams = parentParams
+        layout.setPadding(0, 0, 0, 0)
+        layout.layoutParams = parentParams
+
+        // Inflate our custom view
+        val snackView: View = layoutInflater.inflate(R.layout.y_snackbar, null)
+
+        // Configure our custom view
+        val messageTextView = snackView.findViewById<View>(R.id.message_text_view) as TextView
+        messageTextView.setText(fBody)
+
+        val textViewOne = snackView.findViewById<View>(R.id.first_text_view) as TextView
+        textViewOne.text = fBtn1
+        textViewOne.setOnClickListener {
+            fAction1.onClick(it)
+            snackbar.dismiss()
+        }
+
+        val textViewTwo = snackView.findViewById<View>(R.id.second_text_view) as TextView
+        textViewTwo.text = fBtn2
+        textViewTwo.setOnClickListener {
+            fAction2.onClick(it)
+            snackbar.dismiss()
+        }
+
+        // Add our custom view to the Snackbar's layout
+        layout.addView(snackView, objLayoutParams)
+
+        // Show the Snackbar
+        snackbar.show()
+    }
+
+
+
+        // Add
+
 
     fun checkCrashLogs(){
         val fLogDir = File(
-            filesDir.path + "/files/"
+            filesDir.path
             )
-        fLogDir.list().filter { it -> it.contains("stacktrace") }
+        val fsome = fLogDir.list()
+        val fList = fsome.filter { it -> it.contains("stacktrace") }
+        if (fList.size > 0){
+            val fLog = fList[0]
+            val qFile = File(fLogDir, fLog)
+            showYSnack("last time ur app was chashed :( plz send me logs about it",
+                "send",
+                {
+
+                    val share = Intent.createChooser(Intent().apply {
+                        action = Intent.ACTION_SEND
+
+
+                        // (Optional) Here you're setting the title of the content
+                        putExtra(Intent.EXTRA_TITLE, "pls send me this logs")
+
+                        val qText = qFile.readText()
+                        putExtra(Intent.EXTRA_TEXT, qText)
+                        type = "text/plain"
+                    },
+                        "Send log to me")
+                    startActivity(share)
+                    qFile.delete()
+                        },
+                            "remove",
+                            {
+                                qFile.delete()
+                            },
+                            Snackbar.LENGTH_INDEFINITE
+                )
+        }
     }
 
 
