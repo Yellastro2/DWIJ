@@ -196,16 +196,6 @@ class yNetwork {
             return CompletableFuture.completedFuture(JSONObject(f_res))
         }
 
-        @Throws(
-            IOException::class,
-            InterruptedException::class,
-            JSONException::class
-        )
-         fun getWithHeaders(url: String?, token: String): CompletableFuture<JSONObject>? {
-
-
-            return _tryWithHeader(url,token)
-        }
 
         fun getWithHeadersAndToken(url: String?, token: String): CompletableFuture<JSONObject>? {
 
@@ -214,7 +204,7 @@ class yNetwork {
         }
 
         @WorkerThread
-        fun getWithHeaders(fClient: yClient,url: String?, authorization: Boolean = true): CompletableFuture<JSONObject>? {
+        fun getWithHeaders(fClient: yClient,url: String?): CompletableFuture<JSONObject>? {
 
 
             return _tryWithHeader(url,fClient.m_Token)

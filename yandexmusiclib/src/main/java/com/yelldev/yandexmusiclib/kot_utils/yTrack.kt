@@ -59,8 +59,19 @@ abstract class yTrack() {
 			val urlToRequest = "/tracks/$fId/download-info"
 
 			// Getting xml download info
-			val downloadInfoObj =
-				yNetwork.getWithHeaders(fClient, BASE_URL + urlToRequest, true)!!.get()
+			var downloadInfoObj = JSONObject()
+			try{
+				downloadInfoObj =
+					yNetwork.getWithHeaders(fClient, BASE_URL + urlToRequest)!!.get()
+			}catch (e: Exception){
+				try {
+					downloadInfoObj =
+						yNetwork.getWithHeaders(fClient, BASE_URL + urlToRequest)!!.get()
+				}catch (f: Exception){
+					throw Exception("Error when retry to getWithHeaders()\n${f.toString()}")
+				}
+			}
+
 			val resultGetXml = yNetwork.getXml(
 				fClient,
 				downloadInfoObj!!.getJSONArray("result")!!.getJSONObject(0)

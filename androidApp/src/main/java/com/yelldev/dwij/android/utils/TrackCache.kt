@@ -119,25 +119,28 @@ class TrackCache(mStore: yMediaStore) {
 						).getLong(kTrackCacheSize,sDefTrackCache)
 						while (fCacheSize > fMaxSize) {
 							val fLast = fDaoCache.getLast()
-							if (fLast.mType!= RESTRICTED){
-								try {
-									val fLink = yTrack.mp3Link(mYamClient!!, fLast.mId)?.get()
-									val fUri = Uri.parse(fLink)
-									fOnMissed(fUri)
-									val url = URL(fLink)
-									url.openStream().use {
+							File(fLast.mPath).delete()
+							fDaoCache.delete(fLast)
+							fCacheSize = dirSize(File(sMp3CacheDir))
+//							if (fLast.mType!= RESTRICTED){
+//								try {
+//									val fLink = yTrack.mp3Link(mYamClient!!, fLast.mId)?.get()
+//									val fUri = Uri.parse(fLink)
+//									fOnMissed(fUri)
+//									val url = URL(fLink)
+//									url.openStream().use {
+//
+//									}
+//									File(fLast.mPath).delete()
+//									fDaoCache.delete(fLast)
+//									fCacheSize = dirSize(File(sMp3CacheDir))
+//								}catch (e: Exception){
+//									fLast.mType = RESTRICTED
+//									fLast.mLastCall = System.currentTimeMillis()
+//									fDaoCache.updateRow(fLast)
+//								}
 
-									}
-									File(fLast.mPath).delete()
-									fDaoCache.delete(fLast)
-									fCacheSize = dirSize(File(sMp3CacheDir))
-								}catch (e: Exception){
-									fLast.mType = RESTRICTED
-									fLast.mLastCall = System.currentTimeMillis()
-									fDaoCache.updateRow(fLast)
-								}
-
-							}
+//							}
 //							File(fLast.mPath).delete()
 //							fDaoCache.delete(fLast)
 //							fCacheSize = dirSize(File(sMp3CacheDir))

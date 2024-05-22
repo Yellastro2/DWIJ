@@ -104,7 +104,7 @@ public class Account {
         String urlToRequest = "/account/status";
         //String f_testUrl = "https://api.music.yandex.net/";
 
-        JSONObject result = yNetwork.Companion.getWithHeaders(BaseUrl + urlToRequest, fToken).get();
+        JSONObject result = yNetwork.Companion.getWithHeadersAndToken(BaseUrl + urlToRequest, fToken).get();
         return CompletableFuture.completedFuture(result);
     }
 

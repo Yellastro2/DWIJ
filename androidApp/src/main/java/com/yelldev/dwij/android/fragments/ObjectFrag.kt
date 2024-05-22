@@ -115,7 +115,6 @@ class ObjectFrag : Fragment(R.layout.fragment_object) {
 
             val shareIntent = Intent.createChooser(sendIntent, null)
             startActivity(shareIntent)
-
         }
     }
 

@@ -71,12 +71,6 @@ class yMediaStore(val mCtx: Context) {
 	}
 
 
-//	нужен какой то таймер (раз в день), по которому запускается рескан
-//	рескан в фоне грузит все плейлисты, которые было уже видно у пользователя(или грузит их у пользователя заново)
-//	и правит связи в треках между ними\плейлистами
-//	+ запускать этот скан когда идет апдейт плейлиста
-//
-
 	companion object {
 		@SuppressLint("StaticFieldLeak")
 		private var sStore: yMediaStore? = null
@@ -563,8 +557,14 @@ suspend fun getYamPlaylist(fId: String): YaPlaylist? {
 		val fTrack = getYamClient()?.getObjList("track",fTrackJson)
 
 		if (fTrack != null) {
-			val qTrack = mapper.readValue(fTrack.getJSONArray("result").getJSONObject(0).toString(), YaTrack::class.java)
-			return qTrack
+			try{
+				val qTrack = mapper.readValue(fTrack.getJSONArray("result").getJSONObject(0).toString(), YaTrack::class.java)
+				return qTrack
+
+			}catch (e: Exception){
+				throw Exception("track id: $fTrackId; json response: ${fTrack}")
+			}
+
 		}
 		return null
 	}
