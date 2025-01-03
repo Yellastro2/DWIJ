@@ -21,4 +21,3 @@
 - shutingdown on longtime play any wave - sometimes
 - sometimes on longtime play any wave dont start next track
 - incorect update track info on player screen after add\remove in playlist
-- sometimes touch buttons in notification bar will react after long time (from seconds to 1-2 minutes)
